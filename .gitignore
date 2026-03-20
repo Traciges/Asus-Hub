@@ -1,1 +1,24 @@
+# Project-specific
 context/
+
+# Rust / Cargo
+/target
+**/*.rs.bk
+
+# Editor: VS Code
+.vscode/
+*.code-workspace
+
+# Editor: JetBrains / RustRover
+.idea/
+
+# Editor: Vim / Neovim
+*.swp
+*.swo
+*~
+
+# OS: macOS
+.DS_Store
+
+# OS: Linux
+.Trash-*

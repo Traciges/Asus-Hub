@@ -1,0 +1,11 @@
+[package]
+name = "myasus-linux"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+relm4 = { version = "0.9", features = ["libadwaita"] }
+libadwaita = { version = "0.7", features = ["v1_4"] }
+gtk4 = { version = "0.9", features = ["v4_10"] }
+zbus = { version = "5", default-features = false, features = ["tokio"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
