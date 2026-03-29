@@ -10,6 +10,7 @@ pub struct AppConfig {
     pub oled_care_panel_autohide: bool,
     pub oled_care_transparenz: bool,
     pub fan_tiefschlaf_aktiv: bool,
+    pub fan_profil: u32,
     pub input_gesten_aktiv: bool,
     pub input_fn_key_gesperrt: bool,
 }

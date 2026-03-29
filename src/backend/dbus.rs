@@ -59,15 +59,6 @@ pub async fn set_charge_limit(value: u8) -> Result<u8, String> {
     Ok(value)
 }
 
-pub async fn get_fan_profile() -> Result<FanProfile, String> {
-    let proxy = platform_proxy().await?;
-    let value = proxy
-        .platform_profile()
-        .await
-        .map_err(|e| format!("Lüfterprofil lesen fehlgeschlagen: {e}"))?;
-    Ok(FanProfile::from(value))
-}
-
 pub async fn set_fan_profile(profile: FanProfile) -> Result<FanProfile, String> {
     let proxy = platform_proxy().await?;
     proxy

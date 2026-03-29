@@ -25,7 +25,6 @@ pub enum FanMsg {
 #[derive(Debug)]
 pub enum FanCommandOutput {
     ProfilGesetzt(FanProfile),
-    InitProfil(FanProfile),
     InitTiefschlaf(bool),
     TiefschlafGesetzt(bool),
     Fehler(String),
@@ -88,7 +87,14 @@ impl Component for FanModel {
 
         check_standard.set_group(Some(&check_leistung));
         check_fluester.set_group(Some(&check_leistung));
-        check_standard.set_active(true);
+
+        let config = AppConfig::load();
+        let gespeichertes_profil = FanProfile::from(config.fan_profil);
+        match gespeichertes_profil {
+            FanProfile::Performance => check_leistung.set_active(true),
+            FanProfile::Balanced => check_standard.set_active(true),
+            FanProfile::Quiet => check_fluester.set_active(true),
+        }
 
         for (btn, profile) in [
             (&check_leistung, FanProfile::Performance),
@@ -104,7 +110,7 @@ impl Component for FanModel {
         }
 
         let model = FanModel {
-            aktuelles_profil: FanProfile::Balanced,
+            aktuelles_profil: gespeichertes_profil,
             tiefschlaf_aktiv: false,
             check_leistung,
             check_standard,
@@ -113,11 +119,11 @@ impl Component for FanModel {
 
         let widgets = view_output!();
 
-        sender.command(|out, shutdown| {
+        sender.command(move |out, shutdown| {
             shutdown
                 .register(async move {
-                    match dbus::get_fan_profile().await {
-                        Ok(profile) => out.emit(FanCommandOutput::InitProfil(profile)),
+                    match dbus::set_fan_profile(gespeichertes_profil).await {
+                        Ok(p) => out.emit(FanCommandOutput::ProfilGesetzt(p)),
                         Err(e) => out.emit(FanCommandOutput::Fehler(e)),
                     }
                 })
@@ -152,6 +158,7 @@ impl Component for FanModel {
                     return;
                 }
                 self.aktuelles_profil = profile;
+                AppConfig::update(|c| c.fan_profil = profile as u32);
 
                 sender.command(move |out, shutdown| {
                     shutdown
@@ -195,14 +202,6 @@ impl Component for FanModel {
         _root: &Self::Root,
     ) {
         match msg {
-            FanCommandOutput::InitProfil(profile) => {
-                self.aktuelles_profil = profile;
-                match profile {
-                    FanProfile::Performance => self.check_leistung.set_active(true),
-                    FanProfile::Balanced => self.check_standard.set_active(true),
-                    FanProfile::Quiet => self.check_fluester.set_active(true),
-                }
-            }
             FanCommandOutput::InitTiefschlaf(aktiv) => {
                 self.tiefschlaf_aktiv = aktiv;
             }
