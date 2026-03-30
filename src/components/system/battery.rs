@@ -2,7 +2,7 @@ use relm4::adw;
 use relm4::adw::prelude::*;
 use relm4::prelude::*;
 
-use crate::backend::dbus;
+use crate::services::dbus;
 
 pub struct BatteryModel {
     wartungsmodus_aktiv: bool,

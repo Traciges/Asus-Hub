@@ -1,4 +1,4 @@
-use crate::AppMsg;
+use crate::app::AppMsg;
 use gtk4::prelude::ApplicationExt;
 use ksni::menu::StandardItem;
 use ksni::{Icon, MenuItem, Tray};

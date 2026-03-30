@@ -3,10 +3,10 @@ use relm4::adw;
 use relm4::adw::prelude::*;
 use relm4::prelude::*;
 
-use crate::backend::dbus;
-use crate::backend::dbus::FanProfile;
 use crate::services::commands::pkexec_shell;
 use crate::services::config::AppConfig;
+use crate::services::dbus;
+use crate::services::dbus::FanProfile;
 
 pub struct FanModel {
     aktuelles_profil: FanProfile,
