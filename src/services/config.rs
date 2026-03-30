@@ -61,7 +61,7 @@ impl Default for AppConfig {
 
 impl AppConfig {
     pub fn config_dir() -> Option<std::path::PathBuf> {
-        ProjectDirs::from("", "", "myasus-linux").map(|dirs| dirs.config_dir().to_path_buf())
+        ProjectDirs::from("", "", "zenbook-control").map(|dirs| dirs.config_dir().to_path_buf())
     }
 
     fn config_path() -> Option<std::path::PathBuf> {

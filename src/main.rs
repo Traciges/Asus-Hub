@@ -35,7 +35,7 @@ impl SimpleComponent for AppModel {
 
     view! {
         adw::ApplicationWindow {
-            set_title: Some("MyAsus Control Center"),
+            set_title: Some("Zenbook Control Center"),
             set_default_size: (1200, 800),
 
             #[wrap(Some)]
@@ -108,7 +108,7 @@ impl SimpleComponent for AppModel {
 }
 
 fn main() {
-    let app = RelmApp::new("de.guido.myasus-linux");
+    let app = RelmApp::new("de.guido.zenbook-control");
     adw::StyleManager::default().set_color_scheme(adw::ColorScheme::PreferDark);
     app.run::<AppModel>(());
 }

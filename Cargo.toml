@@ -1,7 +1,7 @@
 [package]
-name = "myasus-linux"
-version = "0.1.0"
-edition = "2024"
+name = "zenbook-control"
+version = "1.0.0"
+edition = "2026"
 
 [dependencies]
 relm4 = { version = "0.9", features = ["libadwaita"] }
