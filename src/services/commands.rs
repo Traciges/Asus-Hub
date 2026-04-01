@@ -1,3 +1,5 @@
+use rust_i18n::t;
+
 /// Führt ein Programm in einem Blocking-Thread aus und gibt `Result<(), String>` zurück.
 pub(crate) async fn run_command_blocking(program: &str, args: &[&str]) -> Result<(), String> {
     let program_name = program.to_string();
@@ -12,12 +14,14 @@ pub(crate) async fn run_command_blocking(program: &str, args: &[&str]) -> Result
 
     match result {
         Ok(Ok(status)) if status.success() => Ok(()),
-        Ok(Ok(status)) => Err(format!(
-            "{program} fehlgeschlagen mit Exit-Code: {}",
-            status.code().unwrap_or(-1)
-        )),
-        Ok(Err(e)) => Err(format!("{program} starten fehlgeschlagen: {e}")),
-        Err(e) => Err(format!("spawn_blocking fehlgeschlagen: {e}")),
+        Ok(Ok(status)) => Err(t!(
+            "error_cmd_exit_code",
+            cmd = program,
+            code = status.code().unwrap_or(-1).to_string()
+        )
+        .to_string()),
+        Ok(Err(e)) => Err(t!("error_cmd_start", cmd = program, error = e.to_string()).to_string()),
+        Err(e) => Err(t!("error_spawn_blocking", error = e.to_string()).to_string()),
     }
 }
 

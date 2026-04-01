@@ -14,10 +14,6 @@ fn default_touchpad_aktiv() -> bool {
 fn default_language() -> String {
     "en".to_string()
 }
-fn default_audio_profil() -> u32 {
-    0
-}
-
 #[derive(Serialize, Deserialize, Clone)]
 pub struct AppConfig {
     pub farbskala_index: u32,
@@ -46,7 +42,7 @@ pub struct AppConfig {
     pub touchpad_aktiv: bool,
     #[serde(default = "default_language")]
     pub language: String,
-    #[serde(default = "default_audio_profil")]
+    #[serde(default)]
     pub audio_profil: u32,
 }
 
@@ -70,7 +66,7 @@ impl Default for AppConfig {
             kbd_abdunklung_schwelle: default_abdunklung_schwelle(),
             touchpad_aktiv: default_touchpad_aktiv(),
             language: default_language(),
-            audio_profil: default_audio_profil(),
+            audio_profil: 0,
         }
     }
 }

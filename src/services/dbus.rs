@@ -1,3 +1,5 @@
+use rust_i18n::t;
+
 #[zbus::proxy(
     interface = "xyz.ljones.Platform",
     default_service = "xyz.ljones.Asusd",
@@ -41,10 +43,10 @@ async fn platform_proxy() -> Result<&'static PlatformProxy<'static>, String> {
         .get_or_try_init(|| async {
             let conn = zbus::Connection::system()
                 .await
-                .map_err(|e| format!("D-Bus-Verbindung fehlgeschlagen: {e}"))?;
+                .map_err(|e| t!("error_dbus_connect", error = e.to_string()).to_string())?;
             PlatformProxy::new(&conn)
                 .await
-                .map_err(|e| format!("Proxy-Erstellung fehlgeschlagen: {e}"))
+                .map_err(|e| t!("error_dbus_proxy_create", error = e.to_string()).to_string())
         })
         .await
 }
@@ -54,7 +56,7 @@ pub async fn get_charge_limit() -> Result<u8, String> {
     proxy
         .charge_control_end_threshold()
         .await
-        .map_err(|e| format!("Ladelimit lesen fehlgeschlagen: {e}"))
+        .map_err(|e| t!("error_charge_limit_read", error = e.to_string()).to_string())
 }
 
 pub async fn set_charge_limit(value: u8) -> Result<u8, String> {
@@ -62,7 +64,7 @@ pub async fn set_charge_limit(value: u8) -> Result<u8, String> {
     proxy
         .set_charge_control_end_threshold(value)
         .await
-        .map_err(|e| format!("Ladelimit setzen fehlgeschlagen: {e}"))?;
+        .map_err(|e| t!("error_charge_limit_write", error = e.to_string()).to_string())?;
     Ok(value)
 }
 
@@ -72,7 +74,7 @@ pub async fn get_fan_profile() -> Result<FanProfile, String> {
         .platform_profile()
         .await
         .map(FanProfile::from)
-        .map_err(|e| format!("Lüfterprofil lesen fehlgeschlagen: {e}"))
+        .map_err(|e| t!("error_fan_profile_read", error = e.to_string()).to_string())
 }
 
 pub async fn set_fan_profile(profile: FanProfile) -> Result<FanProfile, String> {
@@ -80,6 +82,6 @@ pub async fn set_fan_profile(profile: FanProfile) -> Result<FanProfile, String> 
     proxy
         .set_platform_profile(profile as u32)
         .await
-        .map_err(|e| format!("Lüfterprofil setzen fehlgeschlagen: {e}"))?;
+        .map_err(|e| t!("error_fan_profile_write", error = e.to_string()).to_string())?;
     Ok(profile)
 }

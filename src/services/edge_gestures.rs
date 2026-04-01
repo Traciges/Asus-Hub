@@ -1,4 +1,5 @@
 use evdev::{AbsoluteAxisCode, Device, EventSummary, KeyCode};
+use rust_i18n::t;
 use tokio::sync::watch;
 
 /// Fraction of touchpad width/height that counts as an edge zone (4%)
@@ -58,7 +59,7 @@ async fn run_action(program: &str, args: &[&str]) {
         .status()
         .await;
     if let Err(e) = result {
-        eprintln!("Geste: {program} fehlgeschlagen: {e}");
+        eprintln!("{}", t!("error_gesture_action", program = program, error = e.to_string()));
     }
 }
 
@@ -66,7 +67,7 @@ pub async fn run_gesture_loop(mut shutdown: watch::Receiver<bool>) {
     let device = match find_touchpad() {
         Some(d) => d,
         None => {
-            eprintln!("Kein Touchpad gefunden");
+            eprintln!("{}", t!("error_no_touchpad"));
             return;
         }
     };
@@ -74,7 +75,7 @@ pub async fn run_gesture_loop(mut shutdown: watch::Receiver<bool>) {
     let abs_state = match device.get_abs_state() {
         Ok(states) => states,
         Err(e) => {
-            eprintln!("ABS Info nicht verfuegbar: {e}");
+            eprintln!("{}", t!("error_abs_info", error = e.to_string()));
             return;
         }
     };
@@ -104,7 +105,7 @@ pub async fn run_gesture_loop(mut shutdown: watch::Receiver<bool>) {
                 match result {
                     Ok(ev) => ev,
                     Err(e) => {
-                        eprintln!("Event lesen fehlgeschlagen: {e}");
+                        eprintln!("{}", t!("error_event_read", error = e.to_string()));
                         break;
                     }
                 }
