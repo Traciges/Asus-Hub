@@ -2,7 +2,7 @@ app_title: "Zenbook Control Center"
 app_settings_title: "App-Einstellungen"
 language_title: "Sprache"
 tab_display: "Anzeige"
-tab_keyboard: "Maus &amp; Tastatur"
+tab_keyboard: "Maus & Tastatur"
 tab_system: "System"
 error_prefix: "Fehler:"
 lang_restart_toast: "Sprache geändert. Bitte starte die App neu, um die Änderungen zu übernehmen."
@@ -116,7 +116,7 @@ error_touchpad_unsupported_desktop: "Desktop-Umgebung '%{desktop}' wird für Tou
 error_touchpad_kde: "KDE Touchpad-Toggle fehlgeschlagen. %{error}"
 
 # battery
-battery_group_title: "Energie &amp; Leistung"
+battery_group_title: "Energie & Leistung"
 battery_maintenance_title: "Akku-Wartungsmodus"
 battery_maintenance_subtitle: "Aktivieren Sie den Akku-Wartungsmodus, um die Akkuladung auf 80% der vollen Kapazität zu begrenzen und so die Lebensdauer des Akkus zu verbessern."
 battery_full_charge_title: "Volle Aufladung sofort-Modus"
@@ -128,8 +128,8 @@ battery_deep_sleep_set: "Tiefschlafhilfe auf %{value} gesetzt"
 battery_charge_limit_set: "Ladelimit auf %{value}% gesetzt"
 
 # audio
-tab_audio: "Audio &amp; Mikrofon"
-volume_booster_title: "Lautstärke &amp; Booster"
+tab_audio: "Audio & Mikrofon"
+volume_booster_title: "Lautstärke & Booster"
 volume_booster_desc: "Systemlautstärke anpassen und bis zu 150% übersteuern."
 volume_level_label: "Lautstärke"
 audio_profiles_title: "Sound-Profile"
