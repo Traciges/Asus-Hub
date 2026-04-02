@@ -47,6 +47,16 @@ oled_dimming_slider_title: "Abdunklungsstufe"
 oled_dimming_warning: "* Die Bildqualität kann bei Verwendung dieser Funktion leicht beeinträchtigt sein. Dies ist normal und beeinträchtigt die Nutzung des Displays nicht."
 oled_dimming_set: "OLED DC-Dimming auf %{value}% gesetzt"
 
+# zielmodus
+zielmodus_group_title: "Zielmodus (Inaktiv abdunkeln)"
+zielmodus_group_desc: "Dunkelt inaktive Fenster ab, während das fokussierte Fenster in voller Helligkeit bleibt. Reduziert den OLED-Stromverbrauch beim fokussierten Arbeiten."
+zielmodus_kde_required: "* Erfordert KDE Plasma. Dieses Feature nutzt den KWin-Compositor-Effekt 'Inaktiv abdunkeln' und ist unter anderen Desktop-Umgebungen nicht verfügbar."
+zielmodus_switch_title: "Zielmodus aktivieren"
+zielmodus_switch_subtitle: "Aktiviert den KWin-Effekt 'Inaktiv abdunkeln'."
+zielmodus_strength_title: "Abdunklungsstärke"
+zielmodus_aktiv_set: "Zielmodus auf %{value} gesetzt"
+zielmodus_staerke_set: "Abdunklungsstärke auf %{value}% gesetzt"
+
 # oled_care
 oled_care_group_title: "ASUS OLED Care"
 oled_care_pixel_refresh_title: "Pixelaktualisierung"

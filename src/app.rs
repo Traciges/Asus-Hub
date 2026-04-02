@@ -3,6 +3,7 @@ use crate::components::audio::VolumeModel;
 use crate::components::display::FarbskalaModel;
 use crate::components::display::OledCareModel;
 use crate::components::display::OledDimmingModel;
+use crate::components::display::ZielmodusModel;
 use crate::components::keyboard::AutoBeleuchtungModel;
 use crate::components::keyboard::FnKeyModel;
 use crate::components::keyboard::GesturenModel;
@@ -35,6 +36,7 @@ pub struct AppModel {
     battery: Controller<BatteryModel>,
     fan: Controller<FanModel>,
     oled_dimming: Controller<OledDimmingModel>,
+    zielmodus: Controller<ZielmodusModel>,
     oled_care: Controller<OledCareModel>,
     farbskala: Controller<FarbskalaModel>,
     fn_key: Controller<FnKeyModel>,
@@ -110,6 +112,9 @@ impl SimpleComponent for AppModel {
         let oled_dimming = OledDimmingModel::builder()
             .launch(())
             .forward(sender.input_sender(), fehler);
+        let zielmodus = ZielmodusModel::builder()
+            .launch(())
+            .forward(sender.input_sender(), fehler);
         let oled_care = OledCareModel::builder()
             .launch(())
             .forward(sender.input_sender(), fehler);
@@ -153,6 +158,7 @@ impl SimpleComponent for AppModel {
             battery,
             fan,
             oled_dimming,
+            zielmodus,
             oled_care,
             farbskala,
             fn_key,
@@ -167,6 +173,7 @@ impl SimpleComponent for AppModel {
         let battery_widget = model.battery.widget();
         let fan_widget = model.fan.widget();
         let oled_dimming_widget = model.oled_dimming.widget();
+        let zielmodus_widget = model.zielmodus.widget();
         let oled_care_widget = model.oled_care.widget();
         let farbskala_widget = model.farbskala.widget();
         let fn_key_widget = model.fn_key.widget();
@@ -181,6 +188,7 @@ impl SimpleComponent for AppModel {
 
         let anzeige_page = adw::PreferencesPage::new();
         anzeige_page.add(oled_dimming_widget);
+        anzeige_page.add(zielmodus_widget);
         anzeige_page.add(oled_care_widget);
         anzeige_page.add(farbskala_widget);
 
@@ -239,6 +247,10 @@ impl SimpleComponent for AppModel {
             (
                 "oled_dimming",
                 oled_dimming_widget.clone().upcast::<gtk4::Widget>(),
+            ),
+            (
+                "zielmodus",
+                zielmodus_widget.clone().upcast::<gtk4::Widget>(),
             ),
             (
                 "oled_care",

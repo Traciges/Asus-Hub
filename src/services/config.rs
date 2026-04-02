@@ -14,6 +14,9 @@ fn default_touchpad_aktiv() -> bool {
 fn default_dc_dimming() -> u32 {
     100
 }
+fn default_zielmodus_staerke() -> u32 {
+    25
+}
 fn default_language() -> String {
     "en".to_string()
 }
@@ -51,6 +54,10 @@ pub struct AppConfig {
     pub custom_preset_name: Option<String>,
     #[serde(default = "default_dc_dimming")]
     pub oled_dc_dimming: u32,
+    #[serde(default)]
+    pub zielmodus_aktiv: bool,
+    #[serde(default = "default_zielmodus_staerke")]
+    pub zielmodus_staerke: u32,
 }
 
 impl Default for AppConfig {
@@ -76,6 +83,8 @@ impl Default for AppConfig {
             audio_profil: 0,
             custom_preset_name: None,
             oled_dc_dimming: default_dc_dimming(),
+            zielmodus_aktiv: false,
+            zielmodus_staerke: default_zielmodus_staerke(),
         }
     }
 }

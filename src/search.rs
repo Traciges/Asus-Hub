@@ -37,6 +37,20 @@ static SEARCH_INDEX: &[SearchItem] = &[
         component_key: "oled_dimming",
     },
     SearchItem {
+        title_key: "zielmodus_group_title",
+        page_icon: "monitor-symbolic",
+        page_title_key: "tab_display",
+        page_idx: 0,
+        component_key: "zielmodus",
+    },
+    SearchItem {
+        title_key: "zielmodus_switch_title",
+        page_icon: "monitor-symbolic",
+        page_title_key: "tab_display",
+        page_idx: 0,
+        component_key: "zielmodus",
+    },
+    SearchItem {
         title_key: "oled_care_pixel_refresh_title",
         page_icon: "monitor-symbolic",
         page_title_key: "tab_display",

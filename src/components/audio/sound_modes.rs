@@ -175,8 +175,7 @@ impl Component for SoundModesModel {
                         match dialog.open_future(None::<&gtk::Window>).await {
                             Ok(file) => {
                                 if let Some(path) = file.path() {
-                                    sender_clone
-                                        .input(AudioMsg::CustomPresetPfadGewaehlt(path));
+                                    sender_clone.input(AudioMsg::CustomPresetPfadGewaehlt(path));
                                 } else {
                                     sender_clone.input(AudioMsg::CustomAbgebrochen(vorheriges));
                                 }
