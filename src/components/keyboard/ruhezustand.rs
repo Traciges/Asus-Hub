@@ -6,11 +6,15 @@ use rust_i18n::t;
 
 use crate::services::config::AppConfig;
 
+/// Controls when the keyboard backlight idle-timeout is active.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub(crate) enum TimeoutMode {
+    /// Backlight never times out automatically.
     #[default]
     Never,
+    /// Timeout applies both on battery and when plugged in to AC power.
     BatteryAndAc,
+    /// Timeout applies only when running on battery power.
     BatteryOnly,
 }
 
@@ -26,6 +30,10 @@ impl From<u32> for TimeoutMode {
 
 const TIMEOUT_SECONDS: [u32; 3] = [60, 120, 300];
 
+/// Builds a `busctl` command string to set keyboard backlight brightness via UPower.
+///
+/// When `battery_only` is `true`, the command is wrapped in a shell conditional that reads
+/// the first `online` sysfs file to skip execution when the device is plugged in to AC power.
 fn busctl_brightness_cmd(value: i32, battery_only: bool) -> String {
     let base = format!(
         "busctl call --system org.freedesktop.UPower \
@@ -216,6 +224,10 @@ impl Component for RuhezustandModel {
 }
 
 impl RuhezustandModel {
+    /// (Re)starts the `swayidle` daemon with the current timeout settings.
+    ///
+    /// Aborts any previously running `swayidle` task before spawning a new one.
+    /// Does nothing (and kills the old task) when `mode` is [`TimeoutMode::Never`].
     fn apply_timeout(
         &mut self,
         mode: TimeoutMode,

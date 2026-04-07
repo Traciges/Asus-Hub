@@ -7,23 +7,36 @@ use crate::components::display::helpers::run_qdbus;
 use crate::services::commands::run_command_blocking;
 use crate::services::config::AppConfig;
 
+/// State for the touchpad enable/disable component.
 pub struct TouchpadModel {
+    /// Whether the touchpad is currently enabled.
     touchpad_active: bool,
+    /// Remaining seconds on the disable-confirmation countdown (starts at 10).
     countdown: u8,
+    /// When `true`, the confirmation row is shown and the auto-revert timer is running.
     confirmation_required: bool,
+    /// Handle for the 10-second countdown task; abort it to cancel the revert.
     timer_handle: Option<tokio::task::JoinHandle<()>>,
 }
 
+/// Input messages for the touchpad component.
 #[derive(Debug)]
 pub enum TouchpadMsg {
+    /// User toggled the enable/disable switch.
     ToggleTouchpad(bool),
+    /// User pressed the confirm button within the 10-second window after disabling.
     ConfirmClicked,
 }
 
+/// Async command results for the touchpad component.
 #[derive(Debug)]
 pub enum TouchpadCommandOutput {
+    /// An error message to forward as a toast notification.
     Fehler(String),
+    /// Fired every second to decrement the on-screen countdown.
     CountdownTick,
+    /// Fired when the 10-second confirmation window expires without user action,
+    /// triggering an automatic re-enable of the touchpad.
     TimerElapsed,
 }
 
@@ -177,6 +190,9 @@ impl Component for TouchpadModel {
     }
 }
 
+/// Enables or disables the touchpad using the appropriate desktop-environment API.
+///
+/// Uses `gsettings` on GNOME, `qdbus` on KDE, and returns an error on unsupported desktops.
 async fn run_touchpad_command(active: bool) -> Result<(), String> {
     let desktop = std::env::var("XDG_CURRENT_DESKTOP")
         .unwrap_or_default()

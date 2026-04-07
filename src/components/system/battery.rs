@@ -8,29 +8,47 @@ use crate::services::commands::pkexec_shell;
 use crate::services::config::AppConfig;
 use crate::services::dbus;
 
+/// State for the battery settings component.
 pub struct BatteryModel {
+    /// Whether the `asusd` daemon is reachable; disables charge controls when `false`.
     asusd_available: bool,
+    /// When `true`, the charge limit is capped at 80% to extend long-term battery health.
     maintenance_mode_active: bool,
+    /// When `true`, the charge limit is temporarily raised to 100% for up to 24 hours.
     full_charge_active: bool,
+    /// When `true`, suspend-to-RAM uses the `deep` sleep state instead of `s2idle`.
     deep_sleep_active: bool,
+    /// Cancels the 24-hour full-charge revert timer when the user turns off full-charge mode early.
     timer_cancel: Option<tokio::sync::oneshot::Sender<()>>,
 }
 
+/// Input messages for the battery component.
 #[derive(Debug)]
 pub enum BatteryMsg {
+    /// Enable or disable the 80% charge maintenance mode.
     ToggleMaintenanceMode(bool),
+    /// Enable or disable the temporary 100% full-charge mode (auto-reverts after 24 h).
     ToggleFullCharge(bool),
+    /// Switch suspend-to-RAM between `s2idle` (`false`) and `deep` (`true`).
     ToggleDeepSleep(bool),
 }
 
+/// Async command results for the battery component.
 #[derive(Debug)]
 pub enum BatteryCommandOutput {
+    /// Result of the initial `asusd` availability check.
     AsusdChecked(bool),
+    /// Confirmation that the charge limit was successfully written.
     ChargeLimitSet(u8),
+    /// An error message to forward as a toast notification.
     Fehler(String),
+    /// Fired after the 24-hour full-charge timer expires, triggering a revert to 80%.
     TimerElapsed,
+    /// Charge limit value read from `asusd` during initialisation.
     InitValue(u8),
+    /// Deep-sleep state read from `/sys/power/mem_sleep` during initialisation.
     InitDeepSleep(bool),
+    /// Confirmation that the `/sys/power/mem_sleep` write succeeded.
     DeepSleepSet(bool),
 }
 
@@ -293,6 +311,8 @@ impl Component for BatteryModel {
     }
 }
 
+/// Calls [`dbus::set_charge_limit`] and emits either [`BatteryCommandOutput::ChargeLimitSet`]
+/// or [`BatteryCommandOutput::Fehler`] depending on the outcome.
 async fn emit_limit_result(out: &relm4::Sender<BatteryCommandOutput>, value: u8) {
     match dbus::set_charge_limit(value).await {
         Ok(val) => out.emit(BatteryCommandOutput::ChargeLimitSet(val)),

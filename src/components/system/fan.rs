@@ -8,23 +8,32 @@ use crate::services::config::AppConfig;
 use crate::services::dbus;
 use crate::services::dbus::FanProfile;
 
+/// State for the fan profile settings component.
 pub struct FanModel {
+    /// Whether the `asusd` daemon is reachable; disables all controls when `false`.
     asusd_available: bool,
+    /// The currently active fan profile, used to suppress no-op toggle callbacks.
     current_profile: FanProfile,
     check_performance: gtk::CheckButton,
     check_balanced: gtk::CheckButton,
     check_quiet: gtk::CheckButton,
 }
 
+/// Input messages for the fan profile component.
 #[derive(Debug)]
 pub enum FanMsg {
+    /// Switch to the given fan profile and persist the choice.
     ChangeProfile(FanProfile),
 }
 
+/// Async command results for the fan profile component.
 #[derive(Debug)]
 pub enum FanCommandOutput {
+    /// Result of the initial `asusd` availability check.
     AsusdChecked(bool),
+    /// Confirmation that the profile was successfully applied.
     ProfileSet(FanProfile),
+    /// An error message to forward as a toast notification.
     Fehler(String),
 }
 

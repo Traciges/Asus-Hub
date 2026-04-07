@@ -27,13 +27,21 @@ trait SensorProxy {
     fn has_ambient_light(&self) -> zbus::Result<bool>;
 }
 
+/// State for the ambient-light-based keyboard backlight automation component.
 pub struct AutoBeleuchtungModel {
+    /// Whether the `iio-sensor-proxy` D-Bus service is reachable.
     sensor_available: bool,
+    /// When `true`, the keyboard backlight is raised to max when lux drops below `brighten_threshold`.
     auto_brighten: bool,
+    /// When `true`, the keyboard backlight is turned off when lux exceeds `dim_threshold`.
     auto_dim: bool,
+    /// Ambient light level (lux) below which auto-brighten triggers.
     brighten_threshold: f64,
+    /// Ambient light level (lux) above which auto-dim triggers.
     dim_threshold: f64,
+    /// Sender to shut down the running sensor loop (send `false` to stop).
     loop_tx: Option<watch::Sender<bool>>,
+    /// Last reported ambient light level, displayed in the UI while the loop is active.
     current_lux: Option<f64>,
 }
 
@@ -281,6 +289,7 @@ impl AutoBeleuchtungModel {
     }
 }
 
+/// Returns `true` if the `iio-sensor-proxy` D-Bus service is reachable and reports an ambient light sensor.
 async fn is_sensor_available() -> bool {
     let conn = match zbus::Connection::system().await {
         Ok(c) => c,
@@ -293,6 +302,9 @@ async fn is_sensor_available() -> bool {
     proxy.has_ambient_light().await.is_ok()
 }
 
+/// Sets the keyboard backlight brightness level (0–3) via the UPower D-Bus interface.
+///
+/// Returns `true` on success; failures are treated as non-fatal by callers.
 async fn set_kbd_brightness(value: i32) -> bool {
     run_command_blocking(
         "busctl",
@@ -311,6 +323,9 @@ async fn set_kbd_brightness(value: i32) -> bool {
     .is_ok()
 }
 
+/// Applies auto-brighten/dim rules for a given lux reading and returns the new brightness level.
+///
+/// Only adjusts brightness if it would actually change, preventing redundant D-Bus calls.
 async fn light_sensor_logic(
     level: f64,
     auto_brighten: bool,
@@ -331,6 +346,12 @@ async fn light_sensor_logic(
     current_brightness
 }
 
+/// Spawns a background task that monitors the ambient light sensor and adjusts the keyboard
+/// backlight in response to lux changes.
+///
+/// A 3-lux hysteresis is applied — changes smaller than 3 lux are ignored to avoid
+/// flickering from sensor noise. The task shuts down when `false` is sent on the returned
+/// [`watch::Sender`].
 fn start_sensor_loop(
     auto_brighten: bool,
     brighten_threshold: f64,

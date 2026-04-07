@@ -7,15 +7,24 @@ const EDGE_PERCENT: f64 = 0.04;
 /// Minimum movement in touchpad units required to trigger an action
 const STEP_THRESHOLD: i32 = 300;
 
+/// Tracks the current touch gesture as events arrive from the input device.
 enum GestureState {
+    /// No finger is currently touching the pad.
     Idle,
+    /// Finger down — waiting for the first X and Y position to classify the gesture.
     Classifying { x: Option<i32>, y: Option<i32> },
+    /// Touch started in the left edge zone; tracks volume via vertical movement.
     LeftEdge { last_y: i32 },
+    /// Touch started in the right edge zone; tracks brightness via vertical movement.
     RightEdge { last_y: i32 },
+    /// Touch started in the top edge zone; triggers media prev/next on horizontal movement.
     TopEdge { start_x: i32, done: bool },
+    /// Touch started outside any edge zone — no action will be taken.
     Other,
 }
 
+/// Transitions a [`GestureState::Classifying`] state to the appropriate edge state once both
+/// X and Y coordinates have been received for the initial touch position.
 fn try_classify(state: &mut GestureState, left: i32, right: i32, top: i32) {
     if let GestureState::Classifying {
         x: Some(x),
@@ -37,6 +46,8 @@ fn try_classify(state: &mut GestureState, left: i32, right: i32, top: i32) {
     }
 }
 
+/// Scans `/dev/input/` for the first device whose name contains "touchpad"
+/// and that reports both `ABS_X` and `ABS_Y` absolute axes.
 fn find_touchpad() -> Option<Device> {
     for (_, device) in evdev::enumerate() {
         let name = device.name().unwrap_or_default().to_lowercase();
@@ -53,6 +64,9 @@ fn find_touchpad() -> Option<Device> {
     None
 }
 
+/// Spawns an external program asynchronously to perform a gesture action.
+///
+/// Failures are logged as warnings but do not propagate — this is a fire-and-forget call.
 async fn run_action(program: &str, args: &[&str]) {
     let result = tokio::process::Command::new(program)
         .args(args)
@@ -70,6 +84,15 @@ async fn run_action(program: &str, args: &[&str]) {
     }
 }
 
+/// Main event loop for touchpad edge gesture detection.
+///
+/// Finds the touchpad device, reads its absolute-axis bounds, then processes `evdev` events
+/// to recognise three gesture zones:
+/// - **Left edge** (vertical swipe) → volume up/down via `pactl`
+/// - **Right edge** (vertical swipe) → brightness up/down via `brightnessctl`
+/// - **Top edge** (horizontal swipe) → media previous/next via `playerctl`
+///
+/// The loop exits cleanly when `shutdown` fires (the sender's value changes).
 pub async fn run_gesture_loop(mut shutdown: watch::Receiver<bool>) {
     let device = match find_touchpad() {
         Some(d) => d,
