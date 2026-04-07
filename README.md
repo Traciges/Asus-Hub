@@ -230,3 +230,9 @@ Each settings component is a self-contained Relm4 `Component` with its own state
 Contributions are welcome. If you own a different ASUS laptop model and want to add or fix support for specific features, feel free to open an issue or pull request.
 
 When adding a new feature, follow the existing component pattern in `src/components/` and add corresponding translation keys to both `locales/en.yml` and `locales/de.yml`.
+
+---
+
+## License
+
+This project is licensed under the [GNU General Public License v3.0](LICENSE).
