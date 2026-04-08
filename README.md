@@ -179,7 +179,21 @@ Reboot after installation.
 sudo dnf install easyeffects iio-sensor-proxy swayidle
 ```
 
-### Build
+### Download & Install
+
+Download the package matching your distribution from the [GitHub Releases](https://github.com/Traciges/asus-hub/releases) page:
+
+- **Fedora / RPM-based:**
+  ```bash
+  sudo dnf install ./asus-hub-1.0.0-1.x86_64.rpm
+  ```
+
+- **Debian / Ubuntu / DEB-based:**
+  ```bash
+  sudo apt install ./asus-hub_1.0.0-1_amd64.deb
+  ```
+
+### Build from source
 
 ```bash
 git clone https://github.com/Traciges/asus-hub
