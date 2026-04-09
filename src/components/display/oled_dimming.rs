@@ -92,7 +92,7 @@ impl Component for OledDimmingModel {
                 add_suffix = &gtk::Label {
                     #[watch]
                     set_label: &format!("{}%", model.brightness),
-                    set_width_chars: 4,
+                    set_width_chars: 5,
                     set_xalign: 1.0,
                 },
             },

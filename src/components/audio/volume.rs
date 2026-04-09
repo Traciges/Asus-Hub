@@ -60,6 +60,7 @@ impl SimpleComponent for VolumeModel {
                 add_suffix = &gtk::Label {
                     #[watch]
                     set_label: &format!("{}%", model.volume as i32),
+                    set_width_chars: 5,
                 },
             },
         }
