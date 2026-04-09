@@ -188,6 +188,20 @@ sudo dnf install easyeffects iio-sensor-proxy swayidle
 
 ### 5. Download & Install
 
+**Arch Linux (AUR):**
+
+The application is available in the Arch User Repository. Install using your preferred AUR helper:
+
+| Package | Description |
+|---------|-------------|
+| `asus-hub` | Compiles the latest stable release from source |
+| `asus-hub-bin` | Downloads and installs the pre-compiled binary (fastest) |
+| `asus-hub-git` | Compiles the latest commit from the main branch |
+
+```bash
+yay -S asus-hub-bin
+```
+
 Download the package matching your distribution from the [GitHub Releases](https://github.com/Traciges/asus-hub/releases) page:
 
 - **Fedora / RPM-based:**
