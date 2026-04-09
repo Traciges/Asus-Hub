@@ -121,6 +121,11 @@ fn_key_mode_normal: "normal"
 fn_key_saved: "Fn-Taste %{mode} gespeichert – wirksam nach Systemneustart."
 fn_key_save_error: "Fehler beim Speichern: %{error}"
 
+# asus_key_hint
+asus_key_hint_group_title: "Starten über ASUS-Taste"
+asus_key_hint_row_title: "Starten über ASUS-Taste"
+asus_key_hint_row_subtitle: "Aus Sicherheits- und Architekturgründen lauscht Asus Hub nicht auf Tastendrücke im Hintergrund. Um die App mit der dedizierten ASUS-Taste zu öffnen, nutze einfach die globalen Tastenkürzel-Einstellungen deiner Desktop-Umgebung oder deines Window Managers (z.B. KDE Benutzerdefinierte Tastenkürzel, GNOME-Einstellungen oder deine sxhkd/i3-Konfiguration) und weise der Taste den Start von 'asus-hub' zu."
+
 # gestures
 gestures_group_title: "Intelligente Gesten"
 gestures_group_desc: "Greifen Sie schnell auf häufig verwendete Einstellungen und Apps zu."

@@ -121,6 +121,11 @@ fn_key_mode_normal: "normal"
 fn_key_saved: "Fn key set to %{mode} – takes effect after restart."
 fn_key_save_error: "Error while saving: %{error}"
 
+# asus_key_hint
+asus_key_hint_group_title: "Launch via ASUS Key"
+asus_key_hint_row_title: "Launch via ASUS Key"
+asus_key_hint_row_subtitle: "For security and architecture reasons, Asus Hub does not listen to background keypresses. To open the app with your dedicated ASUS key, simply use the global shortcut settings of your Desktop Environment or Window Manager (e.g., KDE Custom Shortcuts, GNOME Settings, or your sxhkd/i3 config) and bind the key to launch 'asus-hub'."
+
 # gestures
 gestures_group_title: "Smart Gestures"
 gestures_group_desc: "Quickly access frequently used settings and apps."

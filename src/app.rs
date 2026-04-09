@@ -224,6 +224,14 @@ impl SimpleComponent for AppModel {
         keyboard_page.add(backlight_idle_widget);
         keyboard_page.add(fn_key_widget);
 
+        let asus_key_hint_group = adw::PreferencesGroup::new();
+        asus_key_hint_group.set_title(&t!("asus_key_hint_group_title"));
+        let asus_key_hint_row = adw::ActionRow::new();
+        asus_key_hint_row.set_title(&t!("asus_key_hint_row_title"));
+        asus_key_hint_row.set_subtitle(&t!("asus_key_hint_row_subtitle"));
+        asus_key_hint_group.add(&asus_key_hint_row);
+        keyboard_page.add(&asus_key_hint_group);
+
         let touchpad_page = adw::PreferencesPage::new();
         touchpad_page.add(touchpad_widget);
         touchpad_page.add(gestures_widget);
