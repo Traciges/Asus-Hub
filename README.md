@@ -187,12 +187,12 @@ Download the package matching your distribution from the [GitHub Releases](https
 
 - **Fedora / RPM-based:**
   ```bash
-  sudo dnf install ./asus-hub-1.0.1-1.x86_64.rpm
+  sudo dnf install ./asus-hub-1.0.2-1.x86_64.rpm
   ```
 
 - **Debian / Ubuntu / DEB-based:**
   ```bash
-  sudo apt install ./asus-hub_1.0.1-1_amd64.deb
+  sudo apt install ./asus-hub_1.0.2-1_amd64.deb
   ```
 
 - **AppImage (any distribution):**
