@@ -35,8 +35,7 @@
 
 ## Motivation
 
-ASUS provides the MyAsus application for Windows, offering a unified interface to control display settings, battery care, fan profiles, keyboard backlight, and more. On Linux, no equivalent exists.
-
+ASUS provides the MyAsus application for Windows, offering a unified interface to control display settings, battery care, fan profiles, keyboard backlight, and more. On Linux, no equivalent exists. <br>
 Instead, the relevant controls are scattered across a variety of independent tools and configuration files:
 - Battery charge limits via `asusctl`
 - Audio effects via EasyEffects with manual preset management
@@ -45,8 +44,7 @@ Instead, the relevant controls are scattered across a variety of independent too
 - Keyboard backlight via idle daemons like `swayidle`
 - OLED-specific care settings buried in KDE power management config files
 
-Asus Hub aims to consolidate all of these into a single, clean GTK4 interface - making it easy to manage your ASUS laptop on Linux without needing to know which tool controls which feature.
-
+Asus Hub aims to consolidate all of these into a single, clean GTK4 interface - making it easy to manage your ASUS laptop on Linux without needing to know which tool controls which feature. <br>
 The application is smart about availability: if a required tool or desktop environment is not detected, the corresponding setting is automatically disabled rather than silently failing.
 
 ---
@@ -90,8 +88,7 @@ The application is smart about availability: if a required tool or desktop envir
 | Volume & Boost | Control system volume from 0–150% via PipeWire | `wpctl` |
 | Sound Profiles | Apply EasyEffects presets bundled with the app (see below) | `easyeffects` |
 
-> **Bundled EasyEffects presets:** Movie, Music, Perfect EQ, Video, Voice, Custom
->
+> **Bundled EasyEffects presets:** Movie, Music, Perfect EQ, Video, Voice, Custom <br>
 > These presets are **not** the original ASUS audio profiles - they are [Community Presets](https://github.com/wwmm/easyeffects/wiki/Community-presets) from the EasyEffects project, included for convenience. They are automatically installed to the EasyEffects preset directory on first use.
 
 ### System
@@ -145,8 +142,7 @@ The application has been developed and tested on:
 - **OS:** Fedora 43
 - **Desktop:** KDE Plasma (Wayland)
 
-Other ASUS laptops are likely supported to varying degrees. Features relying on `asusd` (battery, fan, FN key) depend on your device being supported by asusctl. Check the [asusctl device support list](https://gitlab.com/asus-linux/asusctl) for compatibility.
-
+Other ASUS laptops are likely supported to varying degrees. Features relying on `asusd` (battery, fan, FN key) depend on your device being supported by asusctl. Check the [asusctl device support list](https://gitlab.com/asus-linux/asusctl) for compatibility. <br>
 Other Linux distributions should work as long as the relevant dependencies can be installed. Features are individually guarded against missing tools, so the app remains usable even if only some dependencies are available.
 
 ---
@@ -171,8 +167,7 @@ sudo pacman -S gtk4 libadwaita
 
 ### 2. Install external tools
 
-Most tools are already included with a standard Fedora KDE installation (`kscreen-doctor`, `kwriteconfig6`, `wpctl`). The following need to be installed manually:
-
+Most tools are already included with a standard Fedora KDE installation (`kscreen-doctor`, `kwriteconfig6`, `wpctl`). The following need to be installed manually: <br>
 **asusctl** (via COPR - see [asus-linux.org](https://asus-linux.org) for full documentation):
 ```bash
 sudo dnf copr enable lukenukem/asus-linux
@@ -204,6 +199,20 @@ The application is available in the Arch User Repository. Install using your pre
 ```bash
 yay -S asus-hub-bin
 ```
+
+**Fedora (Copr - Community Maintained):**
+
+A community member has packaged Asus Hub for Fedora via Copr, providing automatic rebuilds and updates. <br>
+**Note:** This repository is maintained by the community [SkyR0ver](https://github.com/SkyR0ver/asus-hub-rpm), not officially by the upstream project. Currently supported on Fedora 43+.
+
+```bash
+sudo dnf copr enable lukenukem/asus-linux
+sudo dnf copr enable skyr0ver/asus-hub
+sudo dnf install asus-hub
+sudo systemctl enable --now supergfxd.service
+```
+
+**Manual Download:**
 
 Download the package matching your distribution from the [GitHub Releases](https://github.com/Traciges/asus-hub/releases) page:
 
