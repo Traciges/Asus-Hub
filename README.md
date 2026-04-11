@@ -229,8 +229,8 @@ Download the package matching your distribution from the [GitHub Releases](https
 
 - **AppImage (any distribution):**
   ```bash
-  chmod +x asus-hub.AppImage
-  ./asus-hub.AppImage
+  chmod +x asus-hub-1.0.3-1.AppImage
+  ./asus-hub-1.0.3-1.AppImage
   ```
 
 ### Uninstall
@@ -266,7 +266,7 @@ Requires [`appimagetool`](https://github.com/AppImage/AppImageKit/releases) on y
 ```bash
 cargo install cargo-appimage
 cargo appimage
-./target/appimage/asus-hub.AppImage
+./target/appimage/asus-hub-1.0.3-1.AppImage
 ```
 
 ---
