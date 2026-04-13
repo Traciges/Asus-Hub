@@ -158,7 +158,7 @@ battery_full_charge_subtitle: "In Full Charge Now Mode, the battery is charged t
 battery_deep_sleep_title: "Deep Sleep Assistant"
 battery_deep_sleep_subtitle: "To protect the battery, the Deep Sleep Assistant puts the system into deep sleep when it has consumed too much power within a set period."
 error_mem_sleep_read: "Failed to read mem_sleep: %{error}"
-battery_deep_sleep_not_supported: "Deep sleep is not supported on this device"
+battery_deep_sleep_not_supported: "Deep sleep is not supported on this device."
 battery_deep_sleep_set: "Deep sleep set to %{value}"
 battery_charge_limit_set: "Charge limit set to %{value}%"
 
