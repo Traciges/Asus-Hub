@@ -83,20 +83,11 @@ fn find_touchpad() -> Option<Device> {
 /// Spawns an external program asynchronously to perform a gesture action.
 ///
 /// Failures are logged as warnings but do not propagate - this is a fire-and-forget call.
+/// Inside a Flatpak sandbox the command is transparently forwarded to the host via
+/// `flatpak-spawn --host`.
 async fn run_action(program: &str, args: &[&str]) {
-    let result = tokio::process::Command::new(program)
-        .args(args)
-        .status()
-        .await;
-    if let Err(e) = result {
-        tracing::warn!(
-            "{}",
-            t!(
-                "error_gesture_action",
-                program = program,
-                error = e.to_string()
-            )
-        );
+    if let Err(e) = crate::services::commands::run_command_blocking(program, args).await {
+        tracing::warn!("{e}");
     }
 }
 

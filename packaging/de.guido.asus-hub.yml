@@ -1,6 +1,6 @@
 app-id: de.guido.asus-hub
 runtime: org.gnome.Platform
-runtime-version: '46'
+runtime-version: "50"
 sdk: org.gnome.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
@@ -12,11 +12,14 @@ finish-args:
   - --socket=fallback-x11
   - --socket=wayland
   - --device=dri
+  # Input devices – required for evdev touchpad gesture detection
+  - --device=input
   # Config persistence in ~/.config/asus-hub/
   - --persist=.config/asus-hub
-  # System bus – hardware daemons (asusd, supergfxctl)
+  # System bus – hardware daemons (asusd, supergfxctl, iio-sensor-proxy)
   - --system-talk-name=xyz.ljones.Asusd
   - --system-talk-name=org.supergfxctl.Daemon
+  - --system-talk-name=net.hadess.SensorProxy
   # Session bus – KDE / power management
   - --talk-name=org.kde.Solid.PowerManagement
   - --talk-name=org.kde.KWin
@@ -24,12 +27,24 @@ finish-args:
   - --talk-name=org.kde.kglobalaccel
   # Required for flatpak-spawn --host (host command execution)
   - --talk-name=org.freedesktop.Flatpak
+  # Required for system tray / status notifier items
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --own-name=org.kde.StatusNotifierItem-2-1
 
 modules:
+  - name: adwaita-icon-theme
+    buildsystem: meson
+    sources:
+      - type: git
+        url: https://gitlab.gnome.org/GNOME/adwaita-icon-theme.git
+        tag: "50.0"
+
   - name: asus-hub
     buildsystem: simple
     build-options:
       append-path: /usr/lib/sdk/rust-stable/bin
+      build-args:
+        - --share=network
       env:
         CARGO_HOME: /run/build/asus-hub/cargo
     build-commands:

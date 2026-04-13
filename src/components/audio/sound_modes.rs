@@ -23,7 +23,7 @@ use relm4::prelude::*;
 use rust_i18n::t;
 use std::path::PathBuf;
 
-use crate::services::commands::run_command_blocking;
+use crate::services::commands::{is_flatpak, run_command_blocking};
 use crate::services::config::AppConfig;
 
 const PRESET_MUSIC: &str = include_str!("../../../assets/presets/Music.json");
@@ -144,15 +144,7 @@ impl Component for SoundModesModel {
         sender.command(move |out, shutdown| {
             shutdown
                 .register(async move {
-                    let installed = tokio::task::spawn_blocking(|| {
-                        std::process::Command::new("which")
-                            .arg("easyeffects")
-                            .status()
-                            .map(|s| s.success())
-                            .unwrap_or(false)
-                    })
-                    .await
-                    .unwrap_or(false);
+                    let installed = run_command_blocking("which", &["easyeffects"]).await.is_ok();
                     out.emit(AudioCommandOutput::EeChecked(installed));
                 })
                 .drop_on_shutdown()
@@ -286,20 +278,18 @@ impl Component for SoundModesModel {
 }
 
 async fn ensure_easyeffects_running() {
-    let daemon_running = tokio::task::spawn_blocking(|| {
-        std::process::Command::new("pgrep")
-            .args(["-x", "easyeffects"])
-            .status()
-            .map(|s| s.success())
-            .unwrap_or(false)
-    })
-    .await
-    .unwrap_or(false);
+    let daemon_running = run_command_blocking("pgrep", &["-x", "easyeffects"]).await.is_ok();
 
     if !daemon_running {
-        let _ = tokio::process::Command::new("easyeffects")
-            .arg("--gapplication-service")
-            .spawn();
+        if is_flatpak() {
+            let _ = tokio::process::Command::new("flatpak-spawn")
+                .args(["--host", "easyeffects", "--gapplication-service"])
+                .spawn();
+        } else {
+            let _ = tokio::process::Command::new("easyeffects")
+                .arg("--gapplication-service")
+                .spawn();
+        }
         tokio::time::sleep(tokio::time::Duration::from_millis(
             EASYEFFECTS_STARTUP_DELAY_MS,
         ))

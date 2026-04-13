@@ -42,7 +42,10 @@ pub(crate) async fn run_command_blocking(program: &str, args: &[&str]) -> Result
         a.extend(args.iter().map(|s| s.to_string()));
         ("flatpak-spawn".to_string(), a)
     } else {
-        (program.to_string(), args.iter().map(|s| s.to_string()).collect())
+        (
+            program.to_string(),
+            args.iter().map(|s| s.to_string()).collect(),
+        )
     };
 
     let result = tokio::task::spawn_blocking(move || {
@@ -60,7 +63,12 @@ pub(crate) async fn run_command_blocking(program: &str, args: &[&str]) -> Result
             code = status.code().unwrap_or(-1).to_string()
         )
         .to_string()),
-        Ok(Err(e)) => Err(t!("error_cmd_start", cmd = program_display, error = e.to_string()).to_string()),
+        Ok(Err(e)) => Err(t!(
+            "error_cmd_start",
+            cmd = program_display,
+            error = e.to_string()
+        )
+        .to_string()),
         Err(e) => Err(t!("error_spawn_blocking", error = e.to_string()).to_string()),
     }
 }
@@ -82,6 +90,35 @@ static QDBUS_PATH: std::sync::OnceLock<String> = std::sync::OnceLock::new();
 /// Returns the bare string `"qdbus"` as a last resort if nothing is found.
 pub(crate) fn resolve_qdbus_path() -> &'static str {
     QDBUS_PATH.get_or_init(|| {
+        if is_flatpak() {
+            // Search on the host via flatpak-spawn, mirroring the non-Flatpak logic below.
+            for name in ["qdbus6", "qdbus", "qdbus-qt6"] {
+                if std::process::Command::new("flatpak-spawn")
+                    .args(["--host", "which", name])
+                    .status()
+                    .map(|s| s.success())
+                    .unwrap_or(false)
+                {
+                    return name.to_owned();
+                }
+            }
+            for fixed in [
+                "/usr/bin/qdbus6",
+                "/usr/lib/qt6/bin/qdbus6",
+                "/usr/lib/qt6/bin/qdbus",
+                "/usr/lib/qt5/bin/qdbus",
+            ] {
+                if std::process::Command::new("flatpak-spawn")
+                    .args(["--host", "test", "-x", fixed])
+                    .status()
+                    .map(|s| s.success())
+                    .unwrap_or(false)
+                {
+                    return fixed.to_owned();
+                }
+            }
+            return "qdbus6".to_owned();
+        }
         if let Ok(path_var) = std::env::var("PATH") {
             for dir in path_var.split(':') {
                 for name in ["qdbus", "qdbus6", "qdbus-qt6"] {
