@@ -158,7 +158,7 @@ battery_full_charge_subtitle: "Carrega até 100%. O modo de manutenção será r
 battery_deep_sleep_title: "Assistente de deep sleep"
 battery_deep_sleep_subtitle: "Para proteger a bateria, o Assistente de Deep Sleep coloca o sistema em suspensão profunda ao detectar consumo excessivo de energia em um período definido."
 error_mem_sleep_read: "Falha ao ler mem_sleep: %{error}"
-battery_deep_sleep_not_supported: "Deep sleep não é suportado neste dispositivo"
+battery_deep_sleep_not_supported: "Deep sleep não é suportado neste dispositivo."
 battery_deep_sleep_set: "Deep sleep definido como %{value}"
 battery_charge_limit_set: "Limite de carga definido como %{value}%"
 
