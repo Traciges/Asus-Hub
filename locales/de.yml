@@ -158,6 +158,7 @@ battery_full_charge_subtitle: "Im Volle Aufladung sofort-Modus wird der Akku zu 
 battery_deep_sleep_title: "Tiefschlafhilfe"
 battery_deep_sleep_subtitle: "Um den Akku zu schonen, versetzt die Tiefschlafhilfe das System in den Tiefschlafmodus, wenn es in einem festgelegten Zeitraum zu viel Strom verbraucht hat."
 error_mem_sleep_read: "mem_sleep lesen fehlgeschlagen: %{error}"
+battery_deep_sleep_not_supported: "Deep Sleep wird von diesem Gerät nicht unterstützt"
 battery_deep_sleep_set: "Tiefschlafhilfe auf %{value} gesetzt"
 battery_charge_limit_set: "Ladelimit auf %{value}% gesetzt"
 
