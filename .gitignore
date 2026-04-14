@@ -24,3 +24,6 @@ context/
 
 # OS: Linux
 .Trash-*
+
+# Flatpak
+.flatpak-builder/
