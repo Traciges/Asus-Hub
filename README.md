@@ -1,7 +1,7 @@
 <h1 align="center">
-  <img src="assets/trayicon.png" alt="Ayuz icon" width="128" height="128"/>
+  <img src="assets/trayicon.png" alt="Asus Hub icon" width="128" height="128"/>
   <br>
-  Ayuz
+  Asus Hub
 </h1>
 
 <p align="center">
@@ -15,7 +15,9 @@
 ---
 
 > [!WARNING]
-> **Disclaimer:** This is an unofficial, community-driven, open-source project. **"Ayuz" is NOT affiliated with, endorsed by, sponsored by, or connected to ASUSTeK Computer Inc. in any way.** "ASUS", "Zenbook", "ROG", "Vivobook", and "MyAsus" are registered trademarks of ASUSTeK Computer Inc. This software is provided as-is, without warranty, and uses community reverse-engineered backend tools. Use at your own risk.
+> **Disclaimer:** This is an unofficial, community-driven, open-source project. **"Asus Hub" is NOT affiliated with, endorsed by, sponsored by, or connected to ASUSTeK Computer Inc. in any way.** "ASUS", "Zenbook", "ROG", "Vivobook", and "MyAsus" are registered trademarks of ASUSTeK Computer Inc. <br>
+The use of ASUS trademarks within this website and associated tools and libraries is only to provide a recognisable identifier to users to enable them to associate that these tools will work with ASUS laptops. <br>
+This software is provided as-is, without warranty, and uses community reverse-engineered backend tools. Use at your own risk.
 
 ---
 
@@ -50,7 +52,7 @@ Instead, the relevant controls are scattered across a variety of independent too
 - Keyboard backlight via idle daemons like `swayidle`
 - OLED-specific care settings buried in KDE power management config files
 
-Ayuz aims to consolidate all of these into a single, clean GTK4 interface - making it easy to manage your ASUS laptop on Linux without needing to know which tool controls which feature. <br>
+Asus Hub aims to consolidate all of these into a single, clean GTK4 interface - making it easy to manage your ASUS laptop on Linux without needing to know which tool controls which feature. <br>
 The application is smart about availability: if a required tool or desktop environment is not detected, the corresponding setting is automatically disabled rather than silently failing.
 
 ---
@@ -104,7 +106,7 @@ The application is smart about availability: if a required tool or desktop envir
 | Full Charge              | Charge to 100% with automatic revert to maintenance mode after 24 hours                                                                                       | `asusd`       |
 | Deep Sleep               | Switch between `s2idle` and `deep` suspend modes                                                                                                              | -             |
 | Fan Profiles             | Switch between Performance, Balanced, and Quiet fan curves                                                                                                    | `asusd`       |
-| GPU Mode                 | Switch between GPU modes: Hybrid, Integrated, Nvidia (No Modeset), VFIO, Ayuz eGPU, and Ayuz MUX Discrete. Switching GPU modes requires a full system reboot. | `supergfxctl` |
+| GPU Mode                 | Switch between GPU modes: Hybrid, Integrated, Nvidia (No Modeset), VFIO, ASUS eGPU, and ASUS MUX Discrete. Switching GPU modes requires a full system reboot. | `supergfxctl` |
 | GPU Memory Allocation    | Reserve system RAM for the integrated GPU (UMA Frame Buffer). Options: Auto, 1-8 GB. Requires a supported BIOS. Changes require a full system reboot.         | `asusd`       |
 
 ### General
@@ -112,8 +114,8 @@ The application is smart about availability: if a required tool or desktop envir
 - **Profiles** - create and manage multiple named configuration profiles, each with a custom icon. Settings are automatically saved to the currently selected profile and instantly restored when switching
 - **Global search** - search across all settings with a keyboard shortcut
 - **System tray** - minimize to tray, restore or quit from tray menu
-- **Autostart** - optional autostart with the system; when enabled, the app launches hidden (`--hidden`) and only appears in the tray. Managed via a `.desktop` file at `~/.config/autostart/de.guido.ayuz.desktop`
-- **Persistent configuration** - settings are saved to `~/.config/ayuz/config.json` and restored on every launch
+- **Autostart** - optional autostart with the system; when enabled, the app launches hidden (`--hidden`) and only appears in the tray. Managed via a `.desktop` file at `~/.config/autostart/de.guido.asus-hub.desktop`
+- **Persistent configuration** - settings are saved to `~/.config/asus-hub/config.json` and restored on every launch
 - **Multilingual UI** - English and German supported, switchable at runtime
 - **Toast notifications** - errors and status messages shown as non-blocking toasts
 
@@ -121,7 +123,7 @@ The application is smart about availability: if a required tool or desktop envir
 
 ## Dependencies
 
-Ayuz integrates with several external tools and system services. Install only the ones relevant to the features you want to use.
+Asus Hub integrates with several external tools and system services. Install only the ones relevant to the features you want to use.
 
 | Dependency                                                 | Purpose                                                          | Package (Fedora)              |
 | ---------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------- |
@@ -202,48 +204,48 @@ sudo dnf install easyeffects iio-sensor-proxy swayidle
 
 The application is available in the Arch User Repository. Install using your preferred AUR helper:
 
-| Package     | Description                                              |
-| ----------- | -------------------------------------------------------- |
-| `ayuz`      | Compiles the latest stable release from source           |
-| `ayuz-bin`  | Downloads and installs the pre-compiled binary (fastest) |
-| `ayuz-git`  | Compiles the latest commit from the main branch          |
+| Package        | Description                                              |
+| -------------- | -------------------------------------------------------- |
+| `asus-hub`     | Compiles the latest stable release from source           |
+| `asus-hub-bin` | Downloads and installs the pre-compiled binary (fastest) |
+| `asus-hub-git` | Compiles the latest commit from the main branch          |
 
 ```bash
-yay -S ayuz-bin
+yay -S asus-hub-bin
 ```
 
 **Fedora (Copr - Community Maintained):**
 
-A community member has packaged Ayuz for Fedora via Copr, providing automatic rebuilds and updates. <br>
+A community member has packaged Asus Hub for Fedora via Copr, providing automatic rebuilds and updates. <br>
 **Note:** This repository is maintained by the community [SkyR0ver](https://github.com/SkyR0ver/asus-hub-rpm), not officially by the upstream project. Currently supported on Fedora 43+.
 
 ```bash
 sudo dnf copr enable lukenukem/asus-linux
-sudo dnf copr enable skyr0ver/ayuz
-sudo dnf install ayuz
+sudo dnf copr enable skyr0ver/asus-hub
+sudo dnf install asus-hub
 sudo systemctl enable --now supergfxd.service
 ```
 
 **Manual Download:**
 
-Download the package matching your distribution from the [GitHub Releases](https://github.com/Traciges/Ayuz/releases) page:
+Download the package matching your distribution from the [GitHub Releases](https://github.com/Traciges/asus-hub/releases) page:
 
 - **Fedora / RPM-based:**
 
   ```bash
-  sudo dnf install ./ayuz-1.0.6-1.x86_64.rpm
+  sudo dnf install ./asus-hub-1.0.6-1.x86_64.rpm
   ```
 
 - **Debian / Ubuntu / DEB-based:**
 
   ```bash
-  sudo apt install ./ayuz_1.0.6-1_amd64.deb
+  sudo apt install ./asus-hub_1.0.6-1_amd64.deb
   ```
 
 - **AppImage (any distribution):**
   ```bash
-  chmod +x ayuz-1.0.6-1.AppImage
-  ./ayuz-1.0.6-1.AppImage
+  chmod +x asus-hub-1.0.6-1.AppImage
+  ./asus-hub-1.0.6-1.AppImage
   ```
 
 ### Uninstall
@@ -251,27 +253,27 @@ Download the package matching your distribution from the [GitHub Releases](https
 - **Fedora, CentOS oder RHEL (via RPM/DNF):**
 
   ```bash
-  sudo dnf remove ayuz
+  sudo dnf remove asus-hub
   ```
 
 - **Ubuntu, Debian oder Linux Mint (via DEB/APT):**
 
   ```bash
-  sudo apt remove ayuz
+  sudo apt remove asus-hub
   ```
 
 - **openSUSE (via RPM/Zypper):**
   ```bash
-  sudo zypper remove ayuz
+  sudo zypper remove asus-hub
   ```
 
 ### Build from source
 
 ```bash
-git clone https://github.com/Traciges/Ayuz
-cd Ayuz
+git clone https://github.com/Traciges/asus-hub
+cd asus-hub
 cargo build --release
-./target/release/ayuz
+./target/release/asus-hub
 ```
 
 ### Build an AppImage
@@ -281,7 +283,7 @@ Requires [`appimagetool`](https://github.com/AppImage/AppImageKit/releases) on y
 ```bash
 cargo install cargo-appimage
 cargo appimage
-./target/appimage/ayuz-1.0.6-1.AppImage
+./target/appimage/asus-hub-1.0.6-1.AppImage
 ```
 
 ---
