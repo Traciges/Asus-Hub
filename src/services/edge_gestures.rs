@@ -72,7 +72,11 @@ fn find_touchpad() -> Option<Device> {
         }
         let supported = device.supported_absolute_axes();
         if let Some(axes) = supported {
-            if axes.contains(AbsoluteAxisCode::ABS_X) && axes.contains(AbsoluteAxisCode::ABS_Y) {
+            if (axes.contains(AbsoluteAxisCode::ABS_X)
+                || axes.contains(AbsoluteAxisCode::ABS_MT_POSITION_X))
+                && (axes.contains(AbsoluteAxisCode::ABS_Y)
+                    || axes.contains(AbsoluteAxisCode::ABS_MT_POSITION_Y))
+            {
                 return Some(device);
             }
         }
@@ -125,11 +129,22 @@ pub async fn run_gesture_loop(mut shutdown: watch::Receiver<bool>) {
             return;
         }
     };
-    let x_info = abs_state[AbsoluteAxisCode::ABS_X.0 as usize];
-    let y_info = abs_state[AbsoluteAxisCode::ABS_Y.0 as usize];
-
-    let x_max = x_info.maximum;
-    let y_max = y_info.maximum;
+    let x_max = {
+        let legacy = abs_state[AbsoluteAxisCode::ABS_X.0 as usize].maximum;
+        if legacy > 0 {
+            legacy
+        } else {
+            abs_state[AbsoluteAxisCode::ABS_MT_POSITION_X.0 as usize].maximum
+        }
+    };
+    let y_max = {
+        let legacy = abs_state[AbsoluteAxisCode::ABS_Y.0 as usize].maximum;
+        if legacy > 0 {
+            legacy
+        } else {
+            abs_state[AbsoluteAxisCode::ABS_MT_POSITION_Y.0 as usize].maximum
+        }
+    };
     let left_bound = (x_max as f64 * EDGE_PERCENT) as i32;
     let right_bound = (x_max as f64 * (1.0 - EDGE_PERCENT)) as i32;
     let top_bound = (y_max as f64 * EDGE_PERCENT) as i32;
@@ -166,7 +181,11 @@ pub async fn run_gesture_loop(mut shutdown: watch::Receiver<bool>) {
                     state = GestureState::Idle;
                 }
             }
-            EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_X, value) => {
+            EventSummary::AbsoluteAxis(
+                _,
+                AbsoluteAxisCode::ABS_X | AbsoluteAxisCode::ABS_MT_POSITION_X,
+                value,
+            ) => {
                 if let GestureState::Classifying { x, .. } = &mut state {
                     *x = Some(value);
                     try_classify(&mut state, left_bound, right_bound, top_bound);
@@ -184,7 +203,11 @@ pub async fn run_gesture_loop(mut shutdown: watch::Receiver<bool>) {
                     }
                 }
             }
-            EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_Y, value) => {
+            EventSummary::AbsoluteAxis(
+                _,
+                AbsoluteAxisCode::ABS_Y | AbsoluteAxisCode::ABS_MT_POSITION_Y,
+                value,
+            ) => {
                 if let GestureState::Classifying { y, .. } = &mut state {
                     *y = Some(value);
                     try_classify(&mut state, left_bound, right_bound, top_bound);
