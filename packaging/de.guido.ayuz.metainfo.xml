@@ -64,7 +64,7 @@
   <content_rating type="oars-1.1" />
 
   <releases>
-    <release version="1.0.7" date="2026-04-20">
+    <release version="1.0.8" date="2026-04-25">
       <description>
         <p>Added profiles feature. Users can now create, rename, and delete configuration profiles. Settings are automatically saved to the currently active profile.</p>
       </description>

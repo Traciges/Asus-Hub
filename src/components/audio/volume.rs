@@ -74,22 +74,11 @@ impl SimpleComponent for VolumeModel {
     ) -> ComponentParts<Self> {
         let sender_clone = sender.clone();
         tokio::spawn(async move {
-            let output = tokio::process::Command::new("wpctl")
-                .args(["get-volume", "@DEFAULT_AUDIO_SINK@"])
-                .output()
-                .await;
-            if let Ok(out) = output {
-                let text = String::from_utf8_lossy(&out.stdout);
-                // Format: "Volume: 0.45"
-                if let Some(vol_str) = text.split_whitespace().nth(1) {
-                    if let Ok(val) = vol_str.parse::<f64>() {
-                        sender_clone.input(VolumeMsg::UpdateUi(val * 100.0));
-                        return;
-                    }
-                }
-            }
-            sender_clone.input(VolumeMsg::UpdateUi(100.0));
+            let vol = read_current_volume().await.unwrap_or(100.0);
+            sender_clone.input(VolumeMsg::UpdateUi(vol));
         });
+
+        tokio::spawn(start_volume_listener(sender.clone()));
 
         let model = VolumeModel { volume: 100.0 };
         let widgets = view_output!();
@@ -123,6 +112,46 @@ impl SimpleComponent for VolumeModel {
                         &format!("{}%", vol as i32),
                     ])
                     .spawn();
+            }
+        }
+    }
+}
+
+async fn read_current_volume() -> Option<f64> {
+    let out = tokio::process::Command::new("wpctl")
+        .args(["get-volume", "@DEFAULT_AUDIO_SINK@"])
+        .output()
+        .await
+        .ok()?;
+    let text = String::from_utf8_lossy(&out.stdout);
+    // Format: "Volume: 0.45"
+    let vol_str = text.split_whitespace().nth(1)?;
+    let val = vol_str.parse::<f64>().ok()?;
+    Some(val * 100.0)
+}
+
+async fn start_volume_listener(sender: relm4::ComponentSender<VolumeModel>) {
+    use std::process::Stdio;
+    use tokio::io::{AsyncBufReadExt, BufReader};
+    use tokio::process::Command;
+
+    let mut child = match Command::new("pactl")
+        .arg("subscribe")
+        .stdout(Stdio::piped())
+        .spawn()
+    {
+        Ok(c) => c,
+        Err(_) => return,
+    };
+    let stdout = match child.stdout.take() {
+        Some(s) => s,
+        None => return,
+    };
+    let mut lines = BufReader::new(stdout).lines();
+    while let Ok(Some(line)) = lines.next_line().await {
+        if line.contains("'change'") && line.contains("sink") {
+            if let Some(vol) = read_current_volume().await {
+                sender.input(VolumeMsg::UpdateUi(vol));
             }
         }
     }

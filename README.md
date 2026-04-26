@@ -273,19 +273,19 @@ Download the package matching your distribution from the [GitHub Releases](https
 - **Fedora / RPM-based:**
 
   ```bash
-  sudo dnf install ./ayuz-1.0.7-1.x86_64.rpm
+  sudo dnf install ./ayuz-1.0.8-1.x86_64.rpm
   ```
 
 - **Debian / Ubuntu / DEB-based:**
 
   ```bash
-  sudo apt install ./ayuz_1.0.7-1_amd64.deb
+  sudo apt install ./ayuz_1.0.8-1_amd64.deb
   ```
 
 - **AppImage (any distribution):**
   ```bash
-  chmod +x ayuz-1.0.7-1.AppImage
-  ./ayuz-1.0.7-1.AppImage
+  chmod +x ayuz-1.0.8-1.AppImage
+  ./ayuz-1.0.8-1.AppImage
   ```
 
 ### Uninstall
@@ -323,7 +323,7 @@ Requires [`appimagetool`](https://github.com/AppImage/AppImageKit/releases) on y
 ```bash
 cargo install cargo-appimage
 cargo appimage
-./target/appimage/ayuz-1.0.7-1.AppImage
+./target/appimage/ayuz-1.0.8-1.AppImage
 ```
 
 ---
