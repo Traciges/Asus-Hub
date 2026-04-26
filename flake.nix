@@ -20,7 +20,7 @@
       {
         packages.ayuz = pkgs.rustPlatform.buildRustPackage {
           pname = "ayuz";
-          version = "1.0.7-unstable-${pkgs.lib.substring 0 8 (self.lastModifiedDate or "00000000")}";
+          version = "1.0.8-unstable-${pkgs.lib.substring 0 8 (self.lastModifiedDate or "00000000")}";
 
           src = pkgs.lib.cleanSource ./.;
 
