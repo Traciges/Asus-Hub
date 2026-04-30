@@ -83,10 +83,10 @@ The application is smart about availability: if a required tool or desktop envir
 
 ### Touchpad
 
-| Feature         | Description                                                               | Requires     |
-| --------------- | ------------------------------------------------------------------------- | ------------ |
-| Smart Gestures  | Control volume, brightness, and media playback via touchpad edge swipes   | -            |
-| Touchpad Toggle | Enable or disable the touchpad, with a 10-second auto-revert safety timer | KDE or GNOME |
+| Feature         | Description                                                               | Requires                      |
+| --------------- | ------------------------------------------------------------------------- | ----------------------------- |
+| Smart Gestures  | Control volume, brightness, and media playback via touchpad edge swipes   | `brightnessctl`, `playerctl`  |
+| Touchpad Toggle | Enable or disable the touchpad, with a 10-second auto-revert safety timer | KDE or GNOME                  |
 
 ### Audio
 
@@ -138,6 +138,8 @@ Asus Hub integrates with several external tools and system services. Install onl
 | `qdbus`                                                    | KDE-specific D-Bus calls (KDE features)                          | `qt6-tools`                   |
 | `kwriteconfig6`                                            | KDE config file access (KDE features)                            | `kf6-kconfig`                 |
 | `gsettings`                                                | Touchpad toggle on GNOME                                         | `glib2`                       |
+| `brightnessctl`                                            | Smart Gestures                                                   | `brightnessctl`               |
+| `playerctl`                                                | Media playback control                                           | `playerctl`                   |
 
 > Features that depend on a missing tool or an incompatible desktop environment are automatically disabled in the UI.
 
@@ -195,7 +197,7 @@ sudo systemctl enable supergfxd.service
 ### 4. Remaining tools:
 
 ```bash
-sudo dnf install easyeffects iio-sensor-proxy swayidle
+sudo dnf install easyeffects iio-sensor-proxy swayidle brightnessctl playerctl
 ```
 
 ### 5. Download & Install
