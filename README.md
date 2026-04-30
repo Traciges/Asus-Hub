@@ -230,6 +230,46 @@ yay -S ayuz-bin
 
 ```
 
+**NixOS (Flakes):**
+
+Add `ayuz` to your `flake.nix` inputs: `ayuz.url = "github:Klbgr/Ayuz";`.
+
+- **NixOS Module (Recommended):** Automatically configures required system services (`asusd`, `supergfxd`), udev rules, and polkit policies.
+  ```nix
+  { inputs, ... }: {
+    imports = [ inputs.ayuz.nixosModules.default ];
+    services.ayuz.enable = true;
+    services.ayuz.supportMyAsusKey = true; # Rebind MyAsus/ROG key to launch Ayuz
+    services.ayuz.fnKeyMode = "shortcut"; # Set the initial Fn key lock state
+  }
+  ```
+- **Home Manager Module:** For per-user installation, optional autostart, and configuration.
+  ```nix
+  { inputs, ... }: {
+    imports = [ inputs.ayuz.homeManagerModules.default ];
+    programs.ayuz.enable = true;
+    programs.ayuz.autostart = true; # Start minimized on login
+    programs.ayuz.settings = {
+      # accepts either a Nix attribute set or a raw JSON string
+      language = "en";
+    };
+  }
+  ```
+- **Traditional (Flakeless) usage:** You can use `builtins.getFlake` to use the modules or package directly.
+  ```nix
+  { pkgs, ... }: 
+  let
+    ayuz-flake = builtins.getFlake "github:Klbgr/Ayuz";
+  in {
+    imports = [ ayuz-flake.nixosModules.default ];
+    services.ayuz = { ... };
+    home-manager.users.username = {
+      imports = [ ayuz-flake.homeManagerModules.default ];
+      programs.ayuz = { ... };
+    };
+  }
+  ```
+
 **Manual Download:**
 
 Download the package matching your distribution from the [GitHub Releases](https://github.com/Traciges/ayuz/releases) page:
