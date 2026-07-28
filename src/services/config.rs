@@ -65,6 +65,9 @@ fn default_animatrix_shutdown_anim() -> String {
 fn default_true() -> bool {
     true
 }
+fn default_typing_delay_ms() -> u32 {
+    1000
+}
 
 fn generate_profile_id() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
@@ -109,6 +112,15 @@ pub struct Profile {
     pub input_fn_key_locked: bool,
     #[serde(default)]
     pub numberpad_active: bool,
+    /// Suppress touchpad edge gestures while typing.
+    #[serde(default)]
+    pub typing_disable_gestures: bool,
+    /// Disable the whole touchpad while typing.
+    #[serde(default)]
+    pub typing_disable_touchpad: bool,
+    /// Idle time after the last keystroke before gestures/touchpad come back.
+    #[serde(default = "default_typing_delay_ms")]
+    pub typing_reactivation_delay_ms: u32,
 
     // System
     pub battery_deep_sleep_active: bool,
@@ -188,6 +200,9 @@ impl Default for Profile {
             input_gestures_active: false,
             input_fn_key_locked: false,
             numberpad_active: false,
+            typing_disable_gestures: false,
+            typing_disable_touchpad: false,
+            typing_reactivation_delay_ms: default_typing_delay_ms(),
             battery_deep_sleep_active: false,
             gpu_mode: 0,
             apu_mem: 0,

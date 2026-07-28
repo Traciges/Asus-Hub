@@ -19,7 +19,7 @@
 //! enough that consumers share them; per-consumer behaviour lives in the
 //! callers.
 
-use evdev::{AbsoluteAxisCode, Device, EventStream};
+use evdev::{AbsoluteAxisCode, Device, EventStream, KeyCode};
 use rust_i18n::t;
 
 /// Converts a [`Device`] into an [`EventStream`], logging a warning and
@@ -53,6 +53,24 @@ pub fn find_touchpad() -> Option<Device> {
         }
     }
     None
+}
+
+/// Scans `/dev/input/` for every device that looks like a text-entry keyboard,
+/// i.e. one that advertises the alphabetic block plus space and left shift.
+///
+/// Both the built-in and any external keyboard are returned, so callers that
+/// watch for typing activity see all of them.
+pub fn find_keyboards() -> Vec<Device> {
+    evdev::enumerate()
+        .filter_map(|(_, device)| {
+            let keys = device.supported_keys()?;
+            let is_keyboard = keys.contains(KeyCode::KEY_A)
+                && keys.contains(KeyCode::KEY_Z)
+                && keys.contains(KeyCode::KEY_SPACE)
+                && keys.contains(KeyCode::KEY_LEFTSHIFT);
+            is_keyboard.then_some(device)
+        })
+        .collect()
 }
 
 /// Reads the touchpad's absolute axis bounds. Prefers multi-touch

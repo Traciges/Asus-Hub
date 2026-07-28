@@ -35,6 +35,7 @@ use crate::components::keyboard::fn_key::FnKeyMsg;
 use crate::components::touchpad::gestures::GesturesMsg;
 use crate::components::touchpad::numberpad::NumberpadMsg;
 use crate::components::touchpad::touchpad::TouchpadMsg;
+use crate::components::touchpad::typing::TypingMsg;
 use crate::components::system::apu_mem::ApuMemMsg;
 use crate::components::system::battery::BatteryMsg;
 use crate::components::system::fan::FanMsg;
@@ -49,6 +50,7 @@ use crate::components::keyboard::FnKeyModel;
 use crate::components::touchpad::GesturesModel;
 use crate::components::touchpad::NumberpadModel;
 use crate::components::touchpad::TouchpadModel;
+use crate::components::touchpad::TypingModel;
 use crate::components::system::apu_mem::ApuMemModel;
 use crate::components::system::battery::BatteryModel;
 use crate::components::system::fan::FanModel;
@@ -143,6 +145,7 @@ pub struct AppModel {
     gestures: Controller<GesturesModel>,
     numberpad: Controller<NumberpadModel>,
     touchpad: Controller<TouchpadModel>,
+    typing: Controller<TypingModel>,
     auto_backlight: Controller<AutoBacklightModel>,
     backlight_idle: Controller<BacklightIdleModel>,
     sound_modes: Controller<SoundModesModel>,
@@ -211,6 +214,11 @@ impl AppModel {
         self.touchpad.sender().emit(TouchpadMsg::LoadProfile(p.touchpad_active));
         self.gestures.sender().emit(GesturesMsg::LoadProfile(p.input_gestures_active));
         self.numberpad.sender().emit(NumberpadMsg::LoadProfile(p.numberpad_active));
+        self.typing.sender().emit(TypingMsg::LoadProfile {
+            disable_gestures: p.typing_disable_gestures,
+            disable_touchpad: p.typing_disable_touchpad,
+            delay_ms: p.typing_reactivation_delay_ms,
+        });
         self.fn_key.sender().emit(FnKeyMsg::LoadProfile(p.input_fn_key_locked));
 
         // System
@@ -349,6 +357,7 @@ impl SimpleComponent for AppModel {
         let gestures = launch_component!(GesturesModel, sender);
         let numberpad = launch_component!(NumberpadModel, sender);
         let touchpad = launch_component!(TouchpadModel, sender);
+        let typing = launch_component!(TypingModel, sender);
         let auto_backlight = AutoBacklightModel::builder()
             .launch(())
             .forward(sender.input_sender(), |msg| match msg {
@@ -431,6 +440,7 @@ impl SimpleComponent for AppModel {
             gestures,
             numberpad,
             touchpad,
+            typing,
             auto_backlight,
             backlight_idle,
             sound_modes,
@@ -452,6 +462,7 @@ impl SimpleComponent for AppModel {
         let gestures_widget = model.gestures.widget();
         let numberpad_widget = model.numberpad.widget();
         let touchpad_widget = model.touchpad.widget();
+        let typing_widget = model.typing.widget();
         let auto_backlight_widget = model.auto_backlight.widget();
         let backlight_idle_widget = model.backlight_idle.widget();
         let sound_modes_widget = model.sound_modes.widget();
@@ -503,6 +514,7 @@ impl SimpleComponent for AppModel {
         touchpad_page.add(touchpad_widget);
         touchpad_page.add(numberpad_widget);
         touchpad_page.add(gestures_widget);
+        touchpad_page.add(typing_widget);
 
         let audio_page = adw::PreferencesPage::new();
         audio_page.add(volume_widget);
@@ -554,6 +566,7 @@ impl SimpleComponent for AppModel {
             ("gestures", gestures_widget.clone().upcast::<gtk4::Widget>()),
             ("numberpad", numberpad_widget.clone().upcast::<gtk4::Widget>()),
             ("touchpad", touchpad_widget.clone().upcast::<gtk4::Widget>()),
+            ("typing", typing_widget.clone().upcast::<gtk4::Widget>()),
             ("volume", volume_widget.clone().upcast::<gtk4::Widget>()),
             (
                 "sound_modes",

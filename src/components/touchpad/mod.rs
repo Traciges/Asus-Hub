@@ -22,3 +22,6 @@ pub use touchpad::TouchpadModel;
 
 pub mod numberpad;
 pub use numberpad::NumberpadModel;
+
+pub mod typing;
+pub use typing::TypingModel;

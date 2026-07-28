@@ -181,6 +181,17 @@ error_touchpad_unsupported_desktop: "Desktop environment '%{desktop}' is not sup
 touchpad_desktop_required: "This feature requires KDE Plasma or GNOME."
 error_touchpad_kde: "KDE touchpad toggle failed. %{error}"
 
+# disable while typing
+typing_group_title: "While Typing"
+typing_group_desc: "Prevents accidental cursor jumps caused by your palms while you type. Requires read access to the keyboard input devices (input group)."
+typing_disable_gestures_title: "Disable Smart Gestures While Typing"
+typing_disable_gestures_subtitle: "Edge gestures are ignored as long as you are typing."
+typing_disable_touchpad_title: "Disable Touchpad While Typing"
+typing_disable_touchpad_subtitle: "Turns the whole touchpad off while you are typing. Requires KDE Plasma or GNOME."
+typing_delay_title: "Reactivation Delay"
+typing_delay_subtitle: "Seconds without a keystroke before the touchpad and gestures work again."
+typing_desktop_required: "Disabling the touchpad requires KDE Plasma or GNOME. Gesture suppression works on any desktop."
+
 # numberpad
 numberpad_group_title: "NumberPad"
 numberpad_group_desc: "Use the touchpad's LED grid as a numeric keypad. Emits standard Numpad keycodes so international keyboard layouts work natively."
@@ -393,3 +404,4 @@ fan_osd_enabled_title: "Show fan profile overlay"
 fan_osd_enabled_subtitle: "Display a brief on-screen indicator whenever the fan profile changes."
 fan_hotkey_listening: 'FN+F fan-key listener active on "%{device}"'
 error_fan_hotkey_no_device: "No ASUS hotkey input device found; FN+F fan-mode shortcut disabled."
+error_typing_no_keyboard: "No keyboard input device found; disabling input while typing is unavailable."

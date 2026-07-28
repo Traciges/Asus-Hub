@@ -135,7 +135,13 @@ pub async fn run_gesture_loop(mut shutdown: watch::Receiver<bool>) {
         match event.destructure() {
             EventSummary::Key(_, KeyCode::BTN_TOUCH, value) => {
                 if value == 1 {
-                    state = GestureState::Classifying { x: None, y: None };
+                    // Palm rejection: a touch that starts while the user is
+                    // typing never becomes a gesture.
+                    state = if crate::services::typing_watch::gestures_suppressed() {
+                        GestureState::Other
+                    } else {
+                        GestureState::Classifying { x: None, y: None }
+                    };
                 } else {
                     state = GestureState::Idle;
                 }

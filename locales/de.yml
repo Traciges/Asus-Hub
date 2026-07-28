@@ -181,6 +181,17 @@ error_touchpad_unsupported_desktop: "Desktop-Umgebung '%{desktop}' wird für Tou
 touchpad_desktop_required: "Diese Funktion erfordert KDE Plasma oder GNOME."
 error_touchpad_kde: "KDE Touchpad-Toggle fehlgeschlagen. %{error}"
 
+# deaktivieren beim Schreiben
+typing_group_title: "Beim Schreiben"
+typing_group_desc: "Verhindert versehentliche Cursorsprünge durch die Handballen während des Tippens. Erfordert Lesezugriff auf die Tastatur-Eingabegeräte (Gruppe \"input\")."
+typing_disable_gestures_title: "Intelligente Gesten beim Schreiben deaktivieren"
+typing_disable_gestures_subtitle: "Randgesten werden ignoriert, solange Sie tippen."
+typing_disable_touchpad_title: "Touchpad beim Schreiben deaktivieren"
+typing_disable_touchpad_subtitle: "Schaltet das gesamte Touchpad während des Tippens aus. Erfordert KDE Plasma oder GNOME."
+typing_delay_title: "Verzögerung bis zur Reaktivierung"
+typing_delay_subtitle: "Sekunden ohne Tastendruck, bis Touchpad und Gesten wieder funktionieren."
+typing_desktop_required: "Das Deaktivieren des Touchpads erfordert KDE Plasma oder GNOME. Die Gestenunterdrückung funktioniert auf jeder Desktop-Umgebung."
+
 # numberpad
 numberpad_group_title: "NumberPad"
 numberpad_group_desc: "Nutzt das LED-Raster des Touchpads als Zehnertastatur. Sendet Standard-Numpad-Keycodes, damit internationale Tastaturlayouts nativ funktionieren."
@@ -393,3 +404,4 @@ fan_osd_enabled_title: "Lüfterprofil-Overlay anzeigen"
 fan_osd_enabled_subtitle: "Kurze Bildschirmanzeige einblenden, wenn das Lüfterprofil wechselt."
 fan_hotkey_listening: "FN+F Lüftertasten-Listener aktiv auf \"%{device}\""
 error_fan_hotkey_no_device: "Kein ASUS-Hotkey-Eingabegerät gefunden; FN+F-Lüfter-Tastenkürzel deaktiviert."
+error_typing_no_keyboard: "Kein Tastatur-Eingabegerät gefunden; Deaktivieren beim Schreiben ist nicht verfügbar."

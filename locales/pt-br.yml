@@ -181,6 +181,17 @@ error_touchpad_unsupported_desktop: "O ambiente '%{desktop}' não é suportado p
 touchpad_desktop_required: "Este recurso requer KDE Plasma ou GNOME."
 error_touchpad_kde: "Falha ao alternar o touchpad no KDE: %{error}"
 
+# desativar ao digitar
+typing_group_title: "Ao digitar"
+typing_group_desc: "Evita saltos acidentais do cursor causados pelas palmas das mãos enquanto você digita. Requer acesso de leitura aos dispositivos de entrada do teclado (grupo \"input\")."
+typing_disable_gestures_title: "Desativar gestos inteligentes ao digitar"
+typing_disable_gestures_subtitle: "Os gestos de borda são ignorados enquanto você digita."
+typing_disable_touchpad_title: "Desativar touchpad ao digitar"
+typing_disable_touchpad_subtitle: "Desliga todo o touchpad enquanto você digita. Requer KDE Plasma ou GNOME."
+typing_delay_title: "Atraso de reativação"
+typing_delay_subtitle: "Segundos sem digitar até o touchpad e os gestos voltarem a funcionar."
+typing_desktop_required: "Desativar o touchpad requer KDE Plasma ou GNOME. A supressão de gestos funciona em qualquer ambiente."
+
 # numberpad
 numberpad_group_title: "NumberPad"
 numberpad_group_desc: "Use a grade de LEDs do touchpad como teclado numérico. Emite códigos de tecla Numpad padrão para que layouts de teclado internacionais funcionem nativamente."
@@ -393,3 +404,4 @@ fan_osd_enabled_title: "Mostrar sobreposição do perfil da ventoinha"
 fan_osd_enabled_subtitle: "Exibir um indicador rápido na tela sempre que o perfil da ventoinha mudar."
 fan_hotkey_listening: "Listener FN+F da tecla de ventoinha ativo em \"%{device}\""
 error_fan_hotkey_no_device: "Nenhum dispositivo de hotkey ASUS encontrado; atalho FN+F desativado."
+error_typing_no_keyboard: "Nenhum teclado encontrado; desativar a entrada ao digitar não está disponível."

@@ -266,6 +266,34 @@ static SEARCH_INDEX: &[SearchItem] = &[
         page_name: "touchpad",
         component_key: "numberpad",
     },
+    SearchItem {
+        title_key: "typing_group_title",
+        page_icon: "input-touchpad-symbolic",
+        page_title_key: "tab_touchpad",
+        page_name: "touchpad",
+        component_key: "typing",
+    },
+    SearchItem {
+        title_key: "typing_disable_gestures_title",
+        page_icon: "input-touchpad-symbolic",
+        page_title_key: "tab_touchpad",
+        page_name: "touchpad",
+        component_key: "typing",
+    },
+    SearchItem {
+        title_key: "typing_disable_touchpad_title",
+        page_icon: "input-touchpad-symbolic",
+        page_title_key: "tab_touchpad",
+        page_name: "touchpad",
+        component_key: "typing",
+    },
+    SearchItem {
+        title_key: "typing_delay_title",
+        page_icon: "input-touchpad-symbolic",
+        page_title_key: "tab_touchpad",
+        page_name: "touchpad",
+        component_key: "typing",
+    },
     // Audio
     SearchItem {
         title_key: "volume_booster_title",

@@ -119,6 +119,7 @@ Controls for the AniMatrix LED matrix display found on select ROG laptops (e.g. 
 | --------------- | ------------------------------------------------------------------------- | ---------------------------- |
 | Smart Gestures  | Control volume, brightness, and media playback via touchpad edge swipes   | `brightnessctl`, `playerctl` |
 | Touchpad Toggle | Enable or disable the touchpad, with a 10-second auto-revert safety timer | KDE or GNOME                 |
+| While Typing    | Palm rejection: suppress Smart Gestures and/or disable the touchpad entirely while typing, with a configurable reactivation delay (0.1-5 s) after the last keystroke | user in `input` group; KDE or GNOME for the touchpad option |
 | ASUS NumberPad  | Toggle the LED numeric keypad embedded in the touchpad. Emits standard Linux Numpad keycodes (`KEY_KP0`..`KEY_KPENTER`) through a virtual uinput device, so international keyboard layouts (e.g. German, Lithuanian) work natively. | `i2c-dev` + `uinput` kernel modules; user in `i2c` and `input` groups (see below) |
 
 #### NumberPad Requirements

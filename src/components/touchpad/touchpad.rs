@@ -19,9 +19,8 @@ use relm4::adw::prelude::*;
 use relm4::prelude::*;
 use rust_i18n::t;
 
-use crate::components::display::helpers::run_qdbus;
-use crate::services::commands::{is_gnome_desktop, is_kde_desktop, run_command_blocking};
 use crate::services::config::AppConfig;
+use crate::services::touchpad_ctl;
 
 /// State for the touchpad enable/disable component.
 pub struct TouchpadModel {
@@ -128,7 +127,7 @@ impl Component for TouchpadModel {
             countdown: 10,
             confirmation_required: false,
             timer_handle: None,
-            desktop_supported: is_kde_desktop() || is_gnome_desktop(),
+            desktop_supported: touchpad_ctl::desktop_supported(),
         };
         let widgets = view_output!();
         ComponentParts { model, widgets }
@@ -167,7 +166,7 @@ impl Component for TouchpadModel {
                 sender.command(move |out, shutdown| {
                     shutdown
                         .register(async move {
-                            if let Err(e) = run_touchpad_command(active).await {
+                            if let Err(e) = touchpad_ctl::set_enabled(active).await {
                                 out.emit(TouchpadCommandOutput::Error(e));
                             }
                         })
@@ -186,7 +185,7 @@ impl Component for TouchpadModel {
                 sender.command(move |out, shutdown| {
                     shutdown
                         .register(async move {
-                            if let Err(e) = run_touchpad_command(active).await {
+                            if let Err(e) = touchpad_ctl::set_enabled(active).await {
                                 out.emit(TouchpadCommandOutput::Error(e));
                             }
                         })
@@ -225,7 +224,7 @@ impl Component for TouchpadModel {
                 sender.command(move |out, shutdown| {
                     shutdown
                         .register(async move {
-                            if let Err(e) = run_touchpad_command(true).await {
+                            if let Err(e) = touchpad_ctl::set_enabled(true).await {
                                 out.emit(TouchpadCommandOutput::Error(e));
                             }
                         })
@@ -236,43 +235,5 @@ impl Component for TouchpadModel {
                 let _ = sender.output(e);
             }
         }
-    }
-}
-
-/// Enables or disables the touchpad using the appropriate desktop-environment API.
-///
-/// Uses `gsettings` on GNOME, `qdbus` on KDE, and returns an error on unsupported desktops.
-async fn run_touchpad_command(active: bool) -> Result<(), String> {
-    let desktop = std::env::var("XDG_CURRENT_DESKTOP")
-        .unwrap_or_default()
-        .to_lowercase();
-
-    if desktop.contains("gnome") {
-        let value = if active { "enabled" } else { "disabled" };
-        run_command_blocking(
-            "gsettings",
-            &[
-                "set",
-                "org.gnome.desktop.peripherals.touchpad",
-                "send-events",
-                value,
-            ],
-        )
-        .await
-    } else if desktop.contains("kde") {
-        let method = if active {
-            "org.kde.touchpad.enable"
-        } else {
-            "org.kde.touchpad.disable"
-        };
-        run_qdbus(vec![
-            "org.kde.kglobalaccel".to_string(),
-            "/modules/kded_touchpad".to_string(),
-            method.to_string(),
-        ])
-        .await
-        .map_err(|e| t!("error_touchpad_kde", error = e).to_string())
-    } else {
-        Err(t!("error_touchpad_unsupported_desktop", desktop = desktop).to_string())
     }
 }
