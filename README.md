@@ -359,19 +359,19 @@ Download the package matching your distribution from the [GitHub Releases](https
 - **Fedora / RPM-based:**
 
   ```bash
-  sudo dnf install ./ayuz-1.1.8-1.x86_64.rpm
+  sudo dnf install ./ayuz-1.1.9-1.x86_64.rpm
   ```
 
 - **Debian / Ubuntu / DEB-based:**
 
   ```bash
-  sudo apt install ./ayuz_1.1.8-1_amd64.deb
+  sudo apt install ./ayuz_1.1.9-1_amd64.deb
   ```
 
 - **AppImage (any distribution):**
   ```bash
-  chmod +x ayuz-1.1.8-1.AppImage
-  ./ayuz-1.1.8-1.AppImage
+  chmod +x ayuz-1.1.9-1.AppImage
+  ./ayuz-1.1.9-1.AppImage
   ```
 
 **Note for AppImage users:** Because the AppImage runs without root privileges, it cannot install the necessary hardware permissions for the ASUS NumberPad automatically. If you want to use the NumberPad feature, please follow the manual `udev` rules installation in the NumberPad Requirements section above.
