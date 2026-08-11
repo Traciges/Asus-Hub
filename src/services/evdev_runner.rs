@@ -37,10 +37,14 @@ pub fn open_event_stream(device: Device) -> Option<EventStream> {
 /// Scans `/dev/input/` for the first device whose name contains "touchpad"
 /// and that reports both an X and Y absolute axis (either legacy `ABS_X/Y`
 /// or multi-touch `ABS_MT_POSITION_X/Y`).
+///
+/// Our own virtual devices are skipped: the NumberPad relay
+/// ([`crate::services::numberpad_pointer`]) clones the real touchpad closely
+/// enough that a restarted service could otherwise grab its own output.
 pub fn find_touchpad() -> Option<Device> {
     for (_, device) in evdev::enumerate() {
         let name = device.name().unwrap_or_default().to_lowercase();
-        if !name.contains("touchpad") {
+        if !name.contains("touchpad") || name.starts_with("ayuz") {
             continue;
         }
         if let Some(axes) = device.supported_absolute_axes()

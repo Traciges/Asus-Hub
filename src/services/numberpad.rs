@@ -22,11 +22,13 @@
 //!    "magic packet" to the touchpad's I2C slave (`0x15` or `0x38`). The
 //!    bus number is discovered by parsing `/proc/bus/input/devices`.
 //! 2. **Touch interception** - while in *Active* mode the touchpad is
-//!    `EVIOCGRAB`-ed so the pointer freezes, and `BTN_TOUCH` releases are
-//!    translated to numeric-keypad **keycodes** (`KEY_KP0`..`KEY_KPENTER`)
-//!    emitted through a `uinput` virtual device. Emitting *keycodes*, not
-//!    characters, lets the compositor apply the user's keyboard layout
-//!    (German, Lithuanian, ...) natively.
+//!    `EVIOCGRAB`-ed, and taps are translated to numeric-keypad **keycodes**
+//!    (`KEY_KP0`..`KEY_KPENTER`) emitted through a `uinput` virtual device.
+//!    Emitting *keycodes*, not characters, lets the compositor apply the
+//!    user's keyboard layout (German, Lithuanian, ...) natively. Touches that
+//!    turn out to be drags, gestures or clicks go back to the compositor via
+//!    [`crate::services::numberpad_pointer`], so the cursor keeps working
+//!    while the grid is lit, as it does on the ASUS firmware.
 //!
 //! Activation is two-tiered (matches the UI):
 //! - `shutdown` (one channel): when fired, the loop exits and ungrabs.
@@ -42,12 +44,14 @@ use std::path::{Path, PathBuf};
 
 use evdev::uinput::VirtualDevice;
 use evdev::{
-    AbsoluteAxisCode, AttributeSet, Device, EventSummary, InputEvent, KeyCode,
+    AbsoluteAxisCode, AttributeSet, Device, EventSummary, EventType, InputEvent, KeyCode,
+    SynchronizationCode,
 };
 use tokio::sync::{mpsc, watch};
 
 use crate::services::evdev_runner::{find_touchpad, open_event_stream, touchpad_abs_bounds};
 use crate::services::numberpad_layouts::{self, Layout};
+use crate::services::numberpad_pointer::PointerRelay;
 use crate::sys_paths::{DEV_UINPUT, PROC_BUS_INPUT_DEVICES, SYS_PRODUCT_NAME};
 
 /// Linux ioctl request number for `I2C_SLAVE_FORCE` (set slave address even
@@ -283,6 +287,33 @@ enum HoldTimer {
 /// the activation flip.
 const HOLD_DURATION: std::time::Duration = std::time::Duration::from_millis(1000);
 
+/// How far a finger may drift, as a fraction of each axis' range, before its
+/// touch counts as pointing instead of as a key tap. ~4 % is a few
+/// millimetres: above the jitter of a deliberate tap, well below a cursor
+/// move.
+const DRAG_SLOP_FRAC: f64 = 0.04;
+
+/// What the finger on the pad is doing while we own the touchpad. A touch
+/// landing on a key starts as a candidate tap and is demoted to `Pointer`
+/// once it drags, gains a second finger or clicks - which is what lets taps
+/// type digits while drags still move the cursor.
+#[derive(Copy, Clone)]
+enum Touch {
+    /// No finger on the pad.
+    None,
+    /// Single finger resting on `cell`, so far without moving.
+    Key { cell: usize, start_x: i32, start_y: i32 },
+    /// Committed to pointing: frames go through to the virtual touchpad.
+    Pointer,
+}
+
+/// Whether a finger has drifted far enough from where it landed to count as
+/// a drag rather than a tap.
+fn dragged(dx: i32, dy: i32, x_max: i32, y_max: i32) -> bool {
+    (dx.abs() as f64) > (x_max as f64) * DRAG_SLOP_FRAC
+        || (dy.abs() as f64) > (y_max as f64) * DRAG_SLOP_FRAC
+}
+
 /// Computes a cell index from a touch point. Returns `None` if either axis
 /// has zero range (defensive: would otherwise divide by zero) or the
 /// resulting cell has no key.
@@ -365,21 +396,36 @@ pub async fn run_loop(
         }
     };
 
+    // Losing this only costs pointing while the grid is lit, so a failure
+    // here must not take the whole feature down with it.
+    let mut relay = match PointerRelay::new(&device) {
+        Ok(r) => Some(r),
+        Err(e) => {
+            tracing::warn!("NumberPad: pointer relay unavailable: {}", e);
+            None
+        }
+    };
+
     let Some(mut stream) = open_event_stream(device) else {
         return;
     };
 
-    // Local state - tracks the current touch and whether we are intercepting.
+    // Local state. The LEDs follow `active` at once; `grabbed` lags behind
+    // while a finger is on the pad - see `reconcile_grab`.
     let mut active = *active_rx.borrow();
+    let mut grabbed = false;
+    let mut touch_down = false;
+    let mut frame_open = false;
+    let mut touch_ended = false;
     let mut cur_x: i32 = 0;
     let mut cur_y: i32 = 0;
-    let mut press_cell: Option<usize> = None;
+    let mut touch = Touch::None;
     let mut hold = HoldTimer::Idle;
 
-    // Apply initial active state (LEDs + grab) if we entered Active immediately.
+    // Apply the initial state (LEDs + grab) if we entered Active immediately.
     if active {
-        apply_active_state(&i2c_path, i2c_addr, stream.device_mut(), true);
-        ensure_numlock_on(&mut virt);
+        set_leds(&i2c_path, i2c_addr, true);
+        reconcile_grab(stream.device_mut(), &mut virt, true, &mut grabbed);
     }
 
     loop {
@@ -391,13 +437,8 @@ pub async fn run_loop(
                 }
                 let new_active = *active_rx.borrow();
                 if new_active != active {
-                    apply_active_state(&i2c_path, i2c_addr, stream.device_mut(), new_active);
-                    if new_active {
-                        ensure_numlock_on(&mut virt);
-                    }
                     active = new_active;
-                    press_cell = None;
-                    hold = HoldTimer::Idle;
+                    set_leds(&i2c_path, i2c_addr, active);
                 }
             }
             ev = stream.next_event() => {
@@ -408,18 +449,36 @@ pub async fn run_loop(
                         break;
                     }
                 };
+                if event.event_type() != EventType::SYNCHRONIZATION {
+                    frame_open = true;
+                }
+                // Feed the relay first; it withholds the frame until the
+                // verdict below says where it belongs.
+                if grabbed && let Some(relay) = relay.as_mut() {
+                    relay.push(event);
+                }
                 match event.destructure() {
                     EventSummary::Key(_, KeyCode::BTN_TOUCH, 1) => {
-                        // Finger went down. Track the cell at press time (only
-                        // meaningful while Active) and arm the corner-tap hold
-                        // timer if the press lands in the top-right zone.
-                        if active {
-                            press_cell = cell_for(cur_x, cur_y, x_max, y_max, layout);
-                        }
+                        // Finger went down. Arm the corner-tap hold timer if
+                        // the press lands in the top-right zone.
+                        touch_down = true;
                         if in_top_right_zone(cur_x, cur_y, x_max, y_max) {
                             hold = HoldTimer::Tracking {
                                 deadline: tokio::time::Instant::now() + HOLD_DURATION,
                             };
+                        }
+                        if grabbed {
+                            // A press with no key under it has nothing to
+                            // type, so it is pointing from the first frame.
+                            touch = match cell_for(cur_x, cur_y, x_max, y_max, layout) {
+                                Some(cell) => Touch::Key { cell, start_x: cur_x, start_y: cur_y },
+                                None => Touch::Pointer,
+                            };
+                            if matches!(touch, Touch::Pointer)
+                                && let Some(relay) = relay.as_mut()
+                            {
+                                relay.commit();
+                            }
                         }
                     }
                     EventSummary::Key(_, KeyCode::BTN_TOUCH, 0) => {
@@ -427,41 +486,70 @@ pub async fn run_loop(
                         // the corner still emit normally via the cell logic
                         // below because hold cancellation happens *before* the
                         // gesture-fire branch could win the select).
+                        touch_down = false;
+                        touch_ended = true;
                         hold = HoldTimer::Idle;
-                        if active {
-                            let release_cell = cell_for(cur_x, cur_y, x_max, y_max, layout);
-                            if let (Some(p), Some(r)) = (press_cell, release_cell)
-                                && p == r
-                                && let Some(cell) = layout.cells[p]
-                            {
-                                emit_tap(&mut virt, cell.keys);
+                        if grabbed
+                            && let Touch::Key { cell, .. } = touch
+                            && cell_for(cur_x, cur_y, x_max, y_max, layout) == Some(cell)
+                            && let Some(c) = layout.cells[cell]
+                        {
+                            emit_tap(&mut virt, c.keys);
+                        }
+                        touch = Touch::None;
+                    }
+                    // A second finger or a physical click: the user is
+                    // pointing, not typing.
+                    EventSummary::Key(
+                        _,
+                        KeyCode::BTN_TOOL_DOUBLETAP
+                        | KeyCode::BTN_TOOL_TRIPLETAP
+                        | KeyCode::BTN_TOOL_QUADTAP
+                        | KeyCode::BTN_TOOL_QUINTTAP
+                        | KeyCode::BTN_LEFT,
+                        1,
+                    ) => {
+                        hold = HoldTimer::Idle;
+                        if grabbed {
+                            touch = Touch::Pointer;
+                            if let Some(relay) = relay.as_mut() {
+                                relay.commit();
                             }
                         }
-                        press_cell = None;
                     }
-                    EventSummary::AbsoluteAxis(
-                        _,
-                        AbsoluteAxisCode::ABS_X | AbsoluteAxisCode::ABS_MT_POSITION_X,
-                        value,
-                    ) => {
-                        cur_x = value;
+                    EventSummary::AbsoluteAxis(_, axis, value) => {
+                        match axis {
+                            AbsoluteAxisCode::ABS_X | AbsoluteAxisCode::ABS_MT_POSITION_X => {
+                                cur_x = value;
+                            }
+                            AbsoluteAxisCode::ABS_Y | AbsoluteAxisCode::ABS_MT_POSITION_Y => {
+                                cur_y = value;
+                            }
+                            _ => {}
+                        }
                         if matches!(hold, HoldTimer::Tracking { .. })
                             && !in_top_right_zone(cur_x, cur_y, x_max, y_max)
                         {
                             hold = HoldTimer::Idle;
                         }
-                    }
-                    EventSummary::AbsoluteAxis(
-                        _,
-                        AbsoluteAxisCode::ABS_Y | AbsoluteAxisCode::ABS_MT_POSITION_Y,
-                        value,
-                    ) => {
-                        cur_y = value;
-                        if matches!(hold, HoldTimer::Tracking { .. })
-                            && !in_top_right_zone(cur_x, cur_y, x_max, y_max)
+                        if let Touch::Key { start_x, start_y, .. } = touch
+                            && dragged(cur_x - start_x, cur_y - start_y, x_max, y_max)
                         {
-                            hold = HoldTimer::Idle;
+                            touch = Touch::Pointer;
+                            if let Some(relay) = relay.as_mut() {
+                                relay.commit();
+                            }
                         }
+                    }
+                    EventSummary::Synchronization(_, SynchronizationCode::SYN_REPORT, _) => {
+                        frame_open = false;
+                        if let Some(relay) = relay.as_mut() {
+                            relay.end_frame();
+                            if touch_ended {
+                                relay.reset();
+                            }
+                        }
+                        touch_ended = false;
                     }
                     _ => {}
                 }
@@ -475,48 +563,82 @@ pub async fn run_loop(
                     HoldTimer::Idle => std::future::pending::<()>().await,
                 }
             } => {
-                let new_active = !active;
-                apply_active_state(&i2c_path, i2c_addr, stream.device_mut(), new_active);
-                if new_active {
-                    ensure_numlock_on(&mut virt);
-                }
-                active = new_active;
+                active = !active;
+                // The gesture has no other feedback, so light the grid on the
+                // hold itself rather than on release.
+                set_leds(&i2c_path, i2c_addr, active);
                 hold = HoldTimer::Idle;
                 // Suppress the cell emit that would otherwise fire on the
                 // upcoming BTN_TOUCH=0: the corner hold has consumed this touch.
-                press_cell = None;
-                let _ = feedback_tx.send(new_active);
+                touch = Touch::None;
+                let _ = feedback_tx.send(active);
             }
+        }
+
+        // The grab half of the flip lands here, not inline: it may only
+        // happen between touches - see `reconcile_grab`.
+        if !touch_down && !frame_open {
+            reconcile_grab(stream.device_mut(), &mut virt, active, &mut grabbed);
         }
     }
 
     // Clean up: LEDs off, ungrab. Mirror the Idle transition regardless of
     // whichever state we were in when the shutdown fired.
+    if grabbed {
+        if let Err(e) = stream.device_mut().ungrab() {
+            tracing::warn!("NumberPad: evdev ungrab failed: {}", e);
+        }
+    }
     if active {
-        apply_active_state(&i2c_path, i2c_addr, stream.device_mut(), false);
+        set_leds(&i2c_path, i2c_addr, false);
     }
 }
 
-/// Toggles LEDs (via I2C) and the evdev grab in tandem. Logs and continues on
-/// individual failures - a missing grab should not block LED toggling.
-fn apply_active_state(i2c_path: &Path, i2c_addr: u16, device: &mut Device, active: bool) {
-    if active {
+/// Grabs or releases the touchpad to match `desired`, and does nothing when
+/// it already does.
+///
+/// Callers must only reach here with no finger on the pad and no event frame
+/// half-read. `EVIOCGRAB` diverts events the instant it takes effect, so
+/// grabbing mid-touch leaves the compositor with a touch that never ends:
+/// libinput keeps the slot alive and, since the corner press that turns the
+/// NumberPad on sits in its right-edge palm zone, keeps it as a palm forever.
+/// Later single-finger touches reuse that slot and are written off as the
+/// same palm, killing pointing until the device is recreated at reboot.
+fn reconcile_grab(
+    device: &mut Device,
+    virt: &mut VirtualDevice,
+    desired: bool,
+    grabbed: &mut bool,
+) {
+    if desired == *grabbed {
+        return;
+    }
+    let result = if desired { device.grab() } else { device.ungrab() };
+    if let Err(e) = result {
+        tracing::warn!("NumberPad: evdev grab({}) failed: {}", desired, e);
+    }
+    if desired {
+        ensure_numlock_on(virt);
+    }
+    *grabbed = desired;
+}
+
+/// Drives the NumberPad LEDs. The controller wants an unlock packet before it
+/// accepts the enable byte. Logs and continues on failure - a dark grid
+/// should not stop the keys from working.
+///
+/// Separate from the grab above because the two are applied at different
+/// moments: the LEDs follow the user's toggle immediately.
+fn set_leds(i2c_path: &Path, i2c_addr: u16, on: bool) {
+    if on {
         if let Err(e) = i2c_send(i2c_path, i2c_addr, STATE_UNLOCK) {
             tracing::warn!("NumberPad: i2c unlock failed: {}", e);
         }
         if let Err(e) = i2c_send(i2c_path, i2c_addr, STATE_ENABLE) {
             tracing::warn!("NumberPad: i2c enable failed: {}", e);
         }
-        if let Err(e) = device.grab() {
-            tracing::warn!("NumberPad: evdev grab failed: {}", e);
-        }
-    } else {
-        if let Err(e) = device.ungrab() {
-            tracing::warn!("NumberPad: evdev ungrab failed: {}", e);
-        }
-        if let Err(e) = i2c_send(i2c_path, i2c_addr, STATE_DISABLE) {
-            tracing::warn!("NumberPad: i2c disable failed: {}", e);
-        }
+    } else if let Err(e) = i2c_send(i2c_path, i2c_addr, STATE_DISABLE) {
+        tracing::warn!("NumberPad: i2c disable failed: {}", e);
     }
 }
 
